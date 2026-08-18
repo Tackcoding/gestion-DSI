@@ -1,0 +1,10 @@
+A ajouter dans routes/web.php, a l'interieur du groupe middleware('auth') :
+
+    Route::view('/materiels', 'materiels.index')->name('materiels.index');
+
+Puis, dans resources/views/layouts/navigation.blade.php, ajouter le lien
+a cote de "Dashboard" :
+
+    <x-nav-link :href="route('materiels.index')" :active="request()->routeIs('materiels.*')">
+        Materiel
+    </x-nav-link>
