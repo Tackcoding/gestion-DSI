@@ -1,17 +1,17 @@
 <div class="space-y-6">
 
     @if (session('message'))
-        <div class="rounded-md bg-green-50 border border-green-200 p-3 text-sm text-green-800">
+        <div class="message">
             {{ session('message') }}
         </div>
     @endif
 
     {{-- En-tete de l'evenement --}}
-    <div class="rounded-lg border border-gray-200 bg-white p-5 shadow-sm">
+    <div class="carte p-5">
         <div class="flex items-start justify-between">
             <div>
-                <h3 class="text-lg font-semibold text-gray-900">{{ $evenement->intitule }}</h3>
-                <p class="mt-1 text-sm text-gray-600">
+                <h3 class="titre text-lg">{{ $evenement->intitule }}</h3>
+                <p class="mt-1 text-sm text-[var(--gris)]">
                     {{ $evenement->date_debut->format('d/m/Y') }}
                     @if (! $evenement->date_debut->isSameDay($evenement->date_fin))
                         &rarr; {{ $evenement->date_fin->format('d/m/Y') }}
@@ -19,10 +19,10 @@
                     @if ($evenement->lieu) &middot; {{ $evenement->lieu }} @endif
                 </p>
                 @if ($evenement->description)
-                    <p class="mt-2 text-sm text-gray-600">{{ $evenement->description }}</p>
+                    <p class="mt-2 text-sm text-[var(--gris)]">{{ $evenement->description }}</p>
                 @endif
             </div>
-            <span class="inline-flex rounded-full bg-gray-100 px-3 py-1 text-xs font-medium text-gray-800">
+            <span class="badge badge-neutre">
                 {{ $evenement->statut->libelle() }}
             </span>
         </div>
@@ -31,9 +31,9 @@
     {{-- Couvertures --}}
     <div>
         <div class="mb-3 flex items-center justify-between">
-            <h4 class="font-semibold text-gray-900">Couvertures</h4>
+            <h4 class="titre text-lg">Couvertures</h4>
             <button wire:click="ouvrirCreationCouverture"
-                    class="rounded-md bg-indigo-600 px-3 py-1.5 text-sm text-white hover:bg-indigo-700">
+                    class="btn btn-principal">
                 + Ajouter une couverture
             </button>
         </div>
@@ -41,13 +41,13 @@
         <div class="space-y-3">
             @forelse ($couvertures as $couverture)
                 <div wire:key="couv-{{ $couverture->id }}"
-                     class="rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
+                     class="carte p-4">
                     <div class="flex items-start justify-between">
                         <div>
-                            <div class="font-medium text-gray-900">
+                            <div class="font-medium">
                                 {{ $couverture->date->format('d/m/Y') }}
                             </div>
-                            <div class="mt-1 text-sm text-gray-600">
+                            <div class="mt-1 text-sm text-[var(--gris)]">
                                 @if ($couverture->heure_depart)
                                     Depart {{ substr($couverture->heure_depart, 0, 5) }}
                                     @if ($couverture->lieu_depart) &mdash; {{ $couverture->lieu_depart }} @endif
@@ -60,22 +60,22 @@
                         </div>
                         <div class="text-sm whitespace-nowrap">
                             <button wire:click="ouvrirEquipe({{ $couverture->id }})"
-                                    class="text-indigo-600 hover:text-indigo-900">Equipe</button>
+                                    class="lien-action">Equipe</button>
                             <button wire:click="ouvrirEditionCouverture({{ $couverture->id }})"
-                                    class="ml-3 text-gray-700 hover:text-gray-900">Modifier</button>
+                                    class="lien-action ms-4">Modifier</button>
                             <button wire:click="confirmerSuppressionCouverture({{ $couverture->id }})"
-                                    class="ml-3 text-red-600 hover:text-red-900">Supprimer</button>
+                                    class="lien-alerte ms-4">Supprimer</button>
                         </div>
                     </div>
 
                     {{-- Equipe mobilisee --}}
-                    <div class="mt-3 border-t border-gray-100 pt-3">
+                    <div class="mt-3 border-t border-[var(--trait)] pt-3">
                         @if ($couverture->agents->isEmpty())
-                            <p class="text-sm italic text-gray-500">Aucun agent affecte.</p>
+                            <p class="text-sm italic text-[var(--gris)]">Aucun agent affecte.</p>
                         @else
                             <div class="flex flex-wrap gap-2">
                                 @foreach ($couverture->agents as $agent)
-                                    <span class="inline-flex rounded-full bg-indigo-50 px-2.5 py-1 text-xs text-indigo-800">
+                                    <span class="badge badge-ok">
                                         {{ $agent->nom }} {{ $agent->prenom }}
                                     </span>
                                 @endforeach
@@ -84,7 +84,7 @@
                     </div>
                 </div>
             @empty
-                <div class="rounded-lg border border-dashed border-gray-300 p-8 text-center text-sm text-gray-500">
+                <div class="carte border-dashed p-10 text-center text-sm text-[var(--gris)]">
                     Aucune couverture pour cet evenement.
                 </div>
             @endforelse
@@ -93,60 +93,60 @@
 
     {{-- Modale couverture --}}
     @if ($modaleCouverture)
-        <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-            <div class="w-full max-w-lg rounded-lg bg-white p-6 shadow-xl">
-                <h3 class="mb-4 text-lg font-semibold text-gray-900">
+        <div class="voile">
+            <div class="modale max-w-lg">
+                <h3 class="titre mb-5 text-lg">
                     {{ $couvertureId ? 'Modifier la couverture' : 'Nouvelle couverture' }}
                 </h3>
 
                 <div class="space-y-4">
                     <div>
-                        <label class="block text-sm font-medium text-gray-700">Date</label>
+                        <label class="libelle">Date</label>
                         <input type="date" wire:model="date"
-                               class="mt-1 w-full rounded-md border-gray-300 shadow-sm">
-                        @error('date') <span class="text-sm text-red-600">{{ $message }}</span> @enderror
+                               class="champ mt-1">
+                        @error('date') <span class="erreur">{{ $message }}</span> @enderror
                     </div>
 
                     <div class="grid grid-cols-2 gap-4">
                         <div>
-                            <label class="block text-sm font-medium text-gray-700">Heure de depart</label>
+                            <label class="libelle">Heure de depart</label>
                             <input type="time" wire:model="heure_depart"
-                                   class="mt-1 w-full rounded-md border-gray-300 shadow-sm">
+                                   class="champ mt-1">
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700">Lieu de depart</label>
+                            <label class="libelle">Lieu de depart</label>
                             <input type="text" wire:model="lieu_depart"
-                                   class="mt-1 w-full rounded-md border-gray-300 shadow-sm">
+                                   class="champ mt-1">
                         </div>
                     </div>
 
                     <div class="grid grid-cols-2 gap-4">
                         <div>
-                            <label class="block text-sm font-medium text-gray-700">Heure de retour</label>
+                            <label class="libelle">Heure de retour</label>
                             <input type="time" wire:model="heure_retour"
-                                   class="mt-1 w-full rounded-md border-gray-300 shadow-sm">
+                                   class="champ mt-1">
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700">Lieu de retour</label>
+                            <label class="libelle">Lieu de retour</label>
                             <input type="text" wire:model="lieu_retour"
-                                   class="mt-1 w-full rounded-md border-gray-300 shadow-sm">
+                                   class="champ mt-1">
                         </div>
                     </div>
 
                     <div>
-                        <label class="block text-sm font-medium text-gray-700">Observation</label>
+                        <label class="libelle">Observation</label>
                         <textarea wire:model="observation" rows="2"
-                                  class="mt-1 w-full rounded-md border-gray-300 shadow-sm"></textarea>
+                                  class="champ mt-1"></textarea>
                     </div>
                 </div>
 
                 <div class="mt-6 flex justify-end gap-3">
                     <button wire:click="$set('modaleCouverture', false)"
-                            class="rounded-md border border-gray-300 px-4 py-2 text-sm hover:bg-gray-50">
+                            class="btn btn-secondaire">
                         Annuler
                     </button>
                     <button wire:click="enregistrerCouverture"
-                            class="rounded-md bg-indigo-600 px-4 py-2 text-sm text-white hover:bg-indigo-700">
+                            class="btn btn-principal">
                         Enregistrer
                     </button>
                 </div>
@@ -156,28 +156,28 @@
 
     {{-- Affectation d'equipe --}}
     @if ($couvertureEquipeId && $couvertureEnCours)
-        <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-            <div class="w-full max-w-lg rounded-lg bg-white p-6 shadow-xl">
-                <h3 class="text-lg font-semibold text-gray-900">
+        <div class="voile">
+            <div class="modale max-w-lg">
+                <h3 class="titre text-lg">
                     Equipe du {{ $couvertureEnCours->date->format('d/m/Y') }}
                 </h3>
-                <p class="mt-1 text-sm text-gray-600">
+                <p class="mt-1 text-sm text-[var(--gris)]">
                     Seuls les agents disponibles ce jour-la sont proposes :
                     les agents en absence validee ou deja mobilises sur une autre
                     couverture n'apparaissent pas.
                 </p>
 
-                <div class="mt-4 max-h-72 space-y-1 overflow-y-auto rounded-md border border-gray-200 p-2">
+                <div class="mt-4 max-h-72 space-y-1 overflow-y-auto rounded-md border border-[var(--trait)] p-2">
                     @forelse ($agentsDisponibles as $agent)
                         <label wire:key="dispo-{{ $agent->id }}"
-                               class="flex items-center gap-3 rounded px-2 py-1.5 hover:bg-gray-50">
+                               class="flex items-center gap-3 rounded px-2 py-1.5 transition hover:bg-[var(--fond)]">
                             <input type="checkbox" wire:model="agentsSelectionnes"
-                                   value="{{ $agent->id }}" class="rounded border-gray-300">
-                            <span class="text-sm text-gray-900">{{ $agent->nom }} {{ $agent->prenom }}</span>
-                            <span class="ml-auto text-xs text-gray-500">{{ $agent->fonction->libelle }}</span>
+                                   value="{{ $agent->id }}" class="rounded border-[var(--trait)] text-[var(--vert)] focus:ring-[var(--vert)]">
+                            <span class="text-sm">{{ $agent->nom }} {{ $agent->prenom }}</span>
+                            <span class="ms-auto text-xs text-[var(--gris)]">{{ $agent->fonction->libelle }}</span>
                         </label>
                     @empty
-                        <p class="px-2 py-4 text-center text-sm text-gray-500">
+                        <p class="px-2 py-5 text-center text-sm text-[var(--gris)]">
                             Aucun agent disponible a cette date.
                         </p>
                     @endforelse
@@ -185,11 +185,11 @@
 
                 <div class="mt-6 flex justify-end gap-3">
                     <button wire:click="$set('couvertureEquipeId', null)"
-                            class="rounded-md border border-gray-300 px-4 py-2 text-sm hover:bg-gray-50">
+                            class="btn btn-secondaire">
                         Annuler
                     </button>
                     <button wire:click="enregistrerEquipe"
-                            class="rounded-md bg-indigo-600 px-4 py-2 text-sm text-white hover:bg-indigo-700">
+                            class="btn btn-principal">
                         Enregistrer l'equipe
                     </button>
                 </div>
@@ -199,19 +199,19 @@
 
     {{-- Confirmation suppression couverture --}}
     @if ($suppressionCouvertureId)
-        <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-            <div class="w-full max-w-md rounded-lg bg-white p-6 shadow-xl">
-                <h3 class="text-lg font-semibold text-gray-900">Supprimer cette couverture ?</h3>
-                <p class="mt-2 text-sm text-gray-600">
+        <div class="voile">
+            <div class="modale max-w-md">
+                <h3 class="titre text-lg">Supprimer cette couverture ?</h3>
+                <p class="mt-2 text-sm text-[var(--gris)]">
                     Les affectations d'agents associees seront egalement supprimees.
                 </p>
                 <div class="mt-6 flex justify-end gap-3">
                     <button wire:click="$set('suppressionCouvertureId', null)"
-                            class="rounded-md border border-gray-300 px-4 py-2 text-sm hover:bg-gray-50">
+                            class="btn btn-secondaire">
                         Annuler
                     </button>
                     <button wire:click="supprimerCouverture"
-                            class="rounded-md bg-red-600 px-4 py-2 text-sm text-white hover:bg-red-700">
+                            class="btn btn-alerte">
                         Supprimer
                     </button>
                 </div>

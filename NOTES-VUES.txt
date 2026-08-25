@@ -1,0 +1,68 @@
+========================================================
+  MIDSP / DVEC — refonte des vues
+========================================================
+
+CE QUI A CHANGE
+---------------
+1. Plus aucune trace de Laravel dans l'interface :
+   - logo Laravel remplace par une marque textuelle MIDSP / DVEC
+   - page welcome.blade.php (82 Ko de page de demo) remplacee
+     par une simple redirection
+   - "Dashboard" -> "Accueil", "Log Out" -> "Se deconnecter",
+     "Profile" -> "Mon compte" : plus de {{ __() }} en anglais
+   - titre de page : "MIDSP - Gestion des evenements et du materiel"
+
+2. BUG CORRIGE dans layouts/navigation.blade.php :
+   le lien "Evenements" avait ete colle APRES le menu mobile,
+   en dehors de la barre de navigation. Il ne s'affichait donc
+   jamais au bon endroit. Les liens Materiel et Agents etaient
+   absents. La navigation est maintenant complete, sur les deux
+   affichages (bureau + mobile).
+
+3. Identite visuelle propre a la direction, definie une seule
+   fois dans resources/css/app.css :
+   - vert institutionnel #0F5132 (couleur principale)
+   - rouge #9F2B2B RESERVE aux alertes, refus et suppressions
+     (jamais decoratif : s'il est rouge, c'est qu'il y a un probleme)
+   - Newsreader (titres, serif) + Public Sans (interface)
+   - filet double sous les titres de section : rappel du registre
+     papier que l'application remplace
+
+4. Classes reutilisables : .carte .btn .champ .libelle .badge
+   .tableau .modale .message
+   -> les nouvelles vues n'auront plus a repeter 8 classes
+      Tailwind par bouton.
+
+RENOMMAGES A REPERCUTER
+-----------------------
+Route "dashboard" -> "tableau-de-bord"
+Vue  dashboard.blade.php -> tableau-de-bord.blade.php
+
+Dans routes/web.php, remplacer la route dashboard par :
+
+    Route::get('/dashboard', fn () => redirect()->route('tableau-de-bord'));
+
+    Route::middleware('auth')->group(function () {
+        Route::view('/tableau-de-bord', 'tableau-de-bord')->name('tableau-de-bord');
+        ...
+    });
+
+Et dans app/Providers/RouteServiceProvider.php (ou config/fortify)
+si la constante HOME existe :
+
+    public const HOME = '/tableau-de-bord';
+
+Supprimer ensuite resources/views/dashboard.blade.php.
+
+NOUVEAU FICHIER PHP
+-------------------
+app/Livewire/TableauDeBord.php  (le composant du tableau de bord)
+
+A VERIFIER APRES INSTALLATION
+-----------------------------
+    php artisan view:clear
+    php artisan route:clear
+    npm run dev
+
+Les dates en francais ("lundi 25 aout") demandent la locale :
+dans config/app.php -> 'locale' => 'fr',

@@ -1,13 +1,13 @@
 <div class="space-y-4">
 
     @if (session('message'))
-        <div class="rounded-md bg-green-50 border border-green-200 p-3 text-sm text-green-800">
+        <div class="message">
             {{ session('message') }}
         </div>
     @endif
 
     @if (session('erreur'))
-        <div class="rounded-md bg-red-50 border border-red-200 p-3 text-sm text-red-800">
+        <div class="message-erreur">
             {{ session('erreur') }}
         </div>
     @endif
@@ -16,10 +16,10 @@
         <div class="flex flex-1 gap-2">
             <input type="search" wire:model.live.debounce.300ms="recherche"
                    placeholder="Nom, prenom ou IM..."
-                   class="w-full sm:max-w-xs rounded-md border-gray-300 shadow-sm">
+                   class="champ sm:max-w-xs">
 
             <select wire:model.live="filtreFonction"
-                    class="rounded-md border-gray-300 shadow-sm">
+                    class="champ sm:w-auto">
                 <option value="">Toutes les fonctions</option>
                 @foreach ($fonctions as $f)
                     <option value="{{ $f->id }}">{{ $f->libelle }}</option>
@@ -28,46 +28,46 @@
         </div>
 
         <button wire:click="ouvrirCreation"
-                class="rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700">
+                class="btn btn-principal">
             + Nouvel agent
         </button>
     </div>
 
-    <div class="overflow-x-auto rounded-lg border border-gray-200 bg-white shadow-sm">
-        <table class="min-w-full divide-y divide-gray-200">
-            <thead class="bg-gray-50">
+    <div class="carte overflow-x-auto">
+        <table class="tableau min-w-full">
+            <thead>
                 <tr>
-                    <th class="px-4 py-3 text-left text-xs font-medium uppercase text-gray-500">IM</th>
-                    <th class="px-4 py-3 text-left text-xs font-medium uppercase text-gray-500">Agent</th>
-                    <th class="px-4 py-3 text-left text-xs font-medium uppercase text-gray-500">Fonction</th>
-                    <th class="px-4 py-3 text-left text-xs font-medium uppercase text-gray-500">Service</th>
-                    <th class="px-4 py-3 text-left text-xs font-medium uppercase text-gray-500">Statut</th>
-                    <th class="px-4 py-3 text-right text-xs font-medium uppercase text-gray-500">Actions</th>
+                    <th >IM</th>
+                    <th >Agent</th>
+                    <th >Fonction</th>
+                    <th >Service</th>
+                    <th >Statut</th>
+                    <th class="text-right">Actions</th>
                 </tr>
             </thead>
-            <tbody class="divide-y divide-gray-200">
+            <tbody>
                 @forelse ($agents as $agent)
-                    <tr wire:key="agent-{{ $agent->id }}" class="hover:bg-gray-50">
-                        <td class="px-4 py-3 text-sm text-gray-700">
+                    <tr wire:key="agent-{{ $agent->id }}">
+                        <td class="text-[var(--gris)]">
                             {{ $agent->im ?? '—' }}
                         </td>
-                        <td class="px-4 py-3">
-                            <div class="font-medium text-gray-900">{{ $agent->nom }}</div>
-                            <div class="text-sm text-gray-500">{{ $agent->prenom }}</div>
+                        <td >
+                            <div class="font-medium">{{ $agent->nom }}</div>
+                            <div class="text-sm text-[var(--gris)]">{{ $agent->prenom }}</div>
                         </td>
-                        <td class="px-4 py-3 text-sm text-gray-700">{{ $agent->fonction->libelle }}</td>
-                        <td class="px-4 py-3 text-sm text-gray-700">{{ $agent->service->code }}</td>
-                        <td class="px-4 py-3 text-sm">{{ $agent->actif ? 'Actif' : 'Inactif' }}</td>
-                        <td class="px-4 py-3 text-right text-sm">
+                        <td class="text-[var(--gris)]">{{ $agent->fonction->libelle }}</td>
+                        <td class="text-[var(--gris)]">{{ $agent->service->code }}</td>
+                        <td >{{ $agent->actif ? 'Actif' : 'Inactif' }}</td>
+                        <td class="text-right whitespace-nowrap">
                             <button wire:click="ouvrirEdition({{ $agent->id }})"
-                                    class="text-indigo-600 hover:text-indigo-900">Modifier</button>
+                                    class="lien-action">Modifier</button>
                             <button wire:click="confirmerSuppression({{ $agent->id }})"
-                                    class="ml-3 text-red-600 hover:text-red-900">Supprimer</button>
+                                    class="lien-alerte ms-4">Supprimer</button>
                         </td>
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="6" class="px-4 py-8 text-center text-sm text-gray-500">
+                        <td colspan="6" class="py-10 text-center text-[var(--gris)]">
                             Aucun agent trouve.
                         </td>
                     </tr>
@@ -79,69 +79,69 @@
     <div>{{ $agents->links() }}</div>
 
     @if ($modaleOuverte)
-        <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-            <div class="w-full max-w-lg rounded-lg bg-white p-6 shadow-xl">
-                <h3 class="mb-4 text-lg font-semibold text-gray-900">
+        <div class="voile">
+            <div class="modale max-w-lg">
+                <h3 class="titre mb-5 text-lg">
                     {{ $agentId ? 'Modifier l\'agent' : 'Nouvel agent' }}
                 </h3>
 
                 <div class="space-y-4">
                     <div class="grid grid-cols-2 gap-4">
                         <div>
-                            <label class="block text-sm font-medium text-gray-700">Nom</label>
+                            <label class="libelle">Nom</label>
                             <input type="text" wire:model="nom"
-                                   class="mt-1 w-full rounded-md border-gray-300 shadow-sm">
-                            @error('nom') <span class="text-sm text-red-600">{{ $message }}</span> @enderror
+                                   class="champ mt-1">
+                            @error('nom') <span class="erreur">{{ $message }}</span> @enderror
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700">Prenom</label>
+                            <label class="libelle">Prenom</label>
                             <input type="text" wire:model="prenom"
-                                   class="mt-1 w-full rounded-md border-gray-300 shadow-sm">
-                            @error('prenom') <span class="text-sm text-red-600">{{ $message }}</span> @enderror
+                                   class="champ mt-1">
+                            @error('prenom') <span class="erreur">{{ $message }}</span> @enderror
                         </div>
                     </div>
 
                     <div class="grid grid-cols-2 gap-4">
                         <div>
-                            <label class="block text-sm font-medium text-gray-700">IM</label>
+                            <label class="libelle">IM</label>
                             <input type="text" wire:model="im"
-                                   class="mt-1 w-full rounded-md border-gray-300 shadow-sm">
-                            @error('im') <span class="text-sm text-red-600">{{ $message }}</span> @enderror
+                                   class="champ mt-1">
+                            @error('im') <span class="erreur">{{ $message }}</span> @enderror
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700">Telephone</label>
+                            <label class="libelle">Telephone</label>
                             <input type="text" wire:model="telephone"
-                                   class="mt-1 w-full rounded-md border-gray-300 shadow-sm">
+                                   class="champ mt-1">
                         </div>
                     </div>
 
                     <div class="grid grid-cols-2 gap-4">
                         <div>
-                            <label class="block text-sm font-medium text-gray-700">Fonction</label>
+                            <label class="libelle">Fonction</label>
                             <select wire:model="fonction_id"
-                                    class="mt-1 w-full rounded-md border-gray-300 shadow-sm">
+                                    class="champ mt-1">
                                 <option value="">— Choisir —</option>
                                 @foreach ($fonctions as $f)
                                     <option value="{{ $f->id }}">{{ $f->libelle }}</option>
                                 @endforeach
                             </select>
-                            @error('fonction_id') <span class="text-sm text-red-600">{{ $message }}</span> @enderror
+                            @error('fonction_id') <span class="erreur">{{ $message }}</span> @enderror
                         </div>
                         </div>
 
                     <label class="flex items-center gap-2">
-                        <input type="checkbox" wire:model="actif" class="rounded border-gray-300">
-                        <span class="text-sm text-gray-700">Agent actif</span>
+                        <input type="checkbox" wire:model="actif" class="rounded border-[var(--trait)] text-[var(--vert)] focus:ring-[var(--vert)]">
+                        <span class="text-sm text-[var(--gris)]">Agent actif</span>
                     </label>
                 </div>
 
                 <div class="mt-6 flex justify-end gap-3">
                     <button wire:click="$set('modaleOuverte', false)"
-                            class="rounded-md border border-gray-300 px-4 py-2 text-sm hover:bg-gray-50">
+                            class="btn btn-secondaire">
                         Annuler
                     </button>
                     <button wire:click="enregistrer"
-                            class="rounded-md bg-indigo-600 px-4 py-2 text-sm text-white hover:bg-indigo-700">
+                            class="btn btn-principal">
                         Enregistrer
                     </button>
                 </div>
@@ -150,19 +150,19 @@
     @endif
 
     @if ($suppressionId)
-        <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-            <div class="w-full max-w-md rounded-lg bg-white p-6 shadow-xl">
-                <h3 class="text-lg font-semibold text-gray-900">Confirmer la suppression</h3>
-                <p class="mt-2 text-sm text-gray-600">
+        <div class="voile">
+            <div class="modale max-w-md">
+                <h3 class="titre text-lg">Confirmer la suppression</h3>
+                <p class="mt-2 text-sm text-[var(--gris)]">
                     L'agent disparaitra des listes. Cette suppression est logique et reversible.
                 </p>
                 <div class="mt-6 flex justify-end gap-3">
                     <button wire:click="$set('suppressionId', null)"
-                            class="rounded-md border border-gray-300 px-4 py-2 text-sm hover:bg-gray-50">
+                            class="btn btn-secondaire">
                         Annuler
                     </button>
                     <button wire:click="supprimer"
-                            class="rounded-md bg-red-600 px-4 py-2 text-sm text-white hover:bg-red-700">
+                            class="btn btn-alerte">
                         Supprimer
                     </button>
                 </div>

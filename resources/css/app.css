@@ -1,3 +1,168 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/*
+| Identite visuelle MIDSP / DVEC
+| Vert institutionnel, encre sombre, rouge reserve aux alertes.
+| Le rouge ne sert JAMAIS de couleur d'accent decorative : il signale
+| un refus, une suppression ou un manquant.
+*/
+:root {
+    --vert:        #0F5132;
+    --vert-clair:  #E7F0EA;
+    --vert-fonce:  #0A3A24;
+    --encre:       #1C2321;
+    --gris:        #5B6560;
+    --trait:       #DDE2DE;
+    --fond:        #F5F6F4;
+    --alerte:      #9F2B2B;
+    --alerte-clair:#FBEAEA;
+    --ok-clair:    #E7F0EA;
+    --attente:     #8A6D1F;
+    --attente-clair:#FAF3E0;
+}
+
+body {
+    background-color: var(--fond);
+    color: var(--encre);
+}
+
+/* --- Typographie --- */
+.titre {
+    font-family: 'Newsreader', Georgia, serif;
+    font-weight: 500;
+    letter-spacing: -0.01em;
+}
+
+/* Eyebrow : rappelle l'en-tete des documents administratifs */
+.eyebrow {
+    font-size: 0.6875rem;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--gris);
+}
+
+/* --- Signature : le filet double du registre papier --- */
+.filet {
+    border-bottom: 3px double var(--trait);
+}
+
+/* --- Surfaces --- */
+.carte {
+    background: #fff;
+    border: 1px solid var(--trait);
+    border-radius: 6px;
+}
+
+/* --- Boutons --- */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 0.95rem;
+    border-radius: 5px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    line-height: 1.25rem;
+    transition: background-color .15s, border-color .15s, color .15s;
+}
+.btn:focus-visible { outline: 2px solid var(--vert); outline-offset: 2px; }
+
+.btn-principal   { background: var(--vert); color: #fff; }
+.btn-principal:hover { background: var(--vert-fonce); }
+
+.btn-secondaire  { background: #fff; color: var(--encre); border: 1px solid var(--trait); }
+.btn-secondaire:hover { background: var(--fond); }
+
+.btn-alerte      { background: var(--alerte); color: #fff; }
+.btn-alerte:hover { filter: brightness(.9); }
+
+/* --- Champs --- */
+.champ {
+    width: 100%;
+    padding: 0.5rem 0.7rem;
+    border: 1px solid var(--trait);
+    border-radius: 5px;
+    background: #fff;
+    font-size: 0.875rem;
+    color: var(--encre);
+}
+.champ:focus {
+    outline: none;
+    border-color: var(--vert);
+    box-shadow: 0 0 0 3px var(--vert-clair);
+}
+.champ::placeholder { color: #9AA39E; }
+
+.libelle {
+    display: block;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: var(--encre);
+    margin-bottom: 0.3rem;
+}
+
+.erreur { font-size: 0.8125rem; color: var(--alerte); margin-top: 0.25rem; display: block; }
+
+/* --- Badges d'etat : carre discret + texte, pas de pastille pleine --- */
+.badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+    padding: 0.15rem 0.5rem 0.15rem 0.4rem;
+    border-radius: 3px;
+}
+.badge::before {
+    content: '';
+    width: 6px; height: 6px;
+    border-radius: 1px;
+    background: currentColor;
+}
+.badge-neutre  { background: var(--fond);          color: var(--gris); }
+.badge-ok      { background: var(--ok-clair);      color: var(--vert); }
+.badge-attente { background: var(--attente-clair); color: var(--attente); }
+.badge-alerte  { background: var(--alerte-clair);  color: var(--alerte); }
+
+/* --- Tableaux : indicateur lateral au survol, pas de fond plein --- */
+.tableau { width: 100%; border-collapse: collapse; }
+.tableau thead th {
+    text-align: left;
+    padding: 0.6rem 0.9rem;
+    font-size: 0.6875rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--gris);
+    background: var(--fond);
+    border-bottom: 1px solid var(--trait);
+}
+.tableau tbody td {
+    padding: 0.75rem 0.9rem;
+    font-size: 0.875rem;
+    border-bottom: 1px solid var(--trait);
+    vertical-align: top;
+}
+.tableau tbody tr { box-shadow: inset 3px 0 0 transparent; transition: box-shadow .12s; }
+.tableau tbody tr:hover { box-shadow: inset 3px 0 0 var(--vert); }
+
+/* --- Messages --- */
+.message      { border-left: 3px solid var(--vert);   background: var(--ok-clair);     padding: .7rem .9rem; font-size: .875rem; color: var(--vert-fonce); border-radius: 0 5px 5px 0; }
+.message-erreur { border-left: 3px solid var(--alerte); background: var(--alerte-clair); padding: .7rem .9rem; font-size: .875rem; color: var(--alerte); border-radius: 0 5px 5px 0; }
+
+/* --- Liens d'action dans les tableaux --- */
+.lien-action { font-size: .875rem; color: var(--vert); }
+.lien-action:hover { text-decoration: underline; }
+.lien-alerte { font-size: .875rem; color: var(--alerte); }
+.lien-alerte:hover { text-decoration: underline; }
+
+/* --- Modale --- */
+.voile { position: fixed; inset: 0; z-index: 50; display: flex; align-items: center; justify-content: center; padding: 1rem; background: rgba(28,35,33,.5); }
+.modale { width: 100%; background: #fff; border-radius: 8px; padding: 1.5rem; box-shadow: 0 20px 40px -12px rgba(28,35,33,.3); }
+
+@media (prefers-reduced-motion: reduce) {
+    * { transition: none !important; animation: none !important; }
+}
