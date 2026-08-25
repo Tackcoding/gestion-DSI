@@ -7,6 +7,7 @@ use App\Enums\TypeMouvement;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Mouvement extends Model
 {
@@ -34,5 +35,19 @@ class Mouvement extends Model
     public function agent(): BelongsTo
     {
         return $this->belongsTo(Agent::class);
+    }
+
+    /** Constat accessoire par accessoire. */
+    public function accessoires(): BelongsToMany
+    {
+        return $this->belongsToMany(Accessoire::class, 'mouvement_accessoire')
+                    ->withPivot('present', 'etat_constate', 'observation')
+                    ->withTimestamps();
+    }
+
+    /** Accessoires constates absents sur ce mouvement. */
+    public function accessoiresManquants()
+    {
+        return $this->accessoires()->wherePivot('present', false)->get();
     }
 }

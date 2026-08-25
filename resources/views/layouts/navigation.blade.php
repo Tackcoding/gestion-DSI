@@ -97,4 +97,7 @@
             </div>
         </div>
     </div>
+        <x-nav-link :href="route('evenements.index')" :active="request()->routeIs('evenements.*')">
+        Evenements
+    </x-nav-link>
 </nav>

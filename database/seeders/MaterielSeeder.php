@@ -3,6 +3,8 @@
 namespace Database\Seeders;
 
 use App\Enums\EtatMateriel;
+use App\Models\Accessoire;
+use App\Models\CategorieMateriel;
 use App\Models\Materiel;
 use Illuminate\Database\Seeder;
 
@@ -10,20 +12,85 @@ class MaterielSeeder extends Seeder
 {
     public function run(): void
     {
-        // Inventaire fourni : gestion par quantite, pas de numero individuel.
-        $materiels = [
-            ['designation' => 'Roll up MIDSP',    'quantite_totale' => 2, 'description' => null],
-            ['designation' => 'Light box',        'quantite_totale' => 1, 'description' => null],
-            ['designation' => 'Oriflamme MIDSP',  'quantite_totale' => 2, 'description' => 'Support beton'],
-            ['designation' => 'Lettrine MIDSP',   'quantite_totale' => 1, 'description' => null],
-            ['designation' => 'Cubes MIDSP',      'quantite_totale' => 3, 'description' => null],
+        $cat = CategorieMateriel::pluck('id', 'code');
+
+        // Supports de communication : geres en quantite, pas d'identification
+        // individuelle (aucun numero de serie, aucun accessoire).
+        $supports = [
+            ['designation' => 'Roll up MIDSP',   'quantite_totale' => 2],
+            ['designation' => 'Light box',       'quantite_totale' => 1],
+            ['designation' => 'Oriflamme MIDSP', 'quantite_totale' => 2, 'description' => 'Support beton'],
+            ['designation' => 'Lettrine MIDSP',  'quantite_totale' => 1],
+            ['designation' => 'Cubes MIDSP',     'quantite_totale' => 3],
         ];
 
-        foreach ($materiels as $m) {
+        foreach ($supports as $s) {
             Materiel::updateOrCreate(
-                ['designation' => $m['designation']],
-                $m + ['etat' => EtatMateriel::Bon, 'actif' => true]
+                ['designation' => $s['designation']],
+                $s + [
+                    'categorie_id' => $cat['COMM'],
+                    'etat'         => EtatMateriel::Bon,
+                    'actif'        => true,
+                ]
             );
         }
+
+        // Materiel audiovisuel et informatique : unitaire, avec accessoires
+        // constates a chaque sortie et retour.
+        $equipements = [
+            [
+                'designation'     => 'Appareil photo numerique',
+                'marque'          => 'CANON',
+                'modele'          => '90D',
+                'categorie'       => 'AUDIO',
+                'accessoires'     => ['Batterie', 'Chargeur'],
+            ],
+            [
+                'designation'     => 'Objectif',
+                'marque'          => 'CANON',
+                'modele'          => '18-55mm F4',
+                'categorie'       => 'AUDIO',
+                'accessoires'     => [],
+            ],
+            [
+                'designation'     => 'Ordinateur portable',
+                'marque'          => 'Asus',
+                'modele'          => 'ExpertBook',
+                'description'     => 'Intel Core i5 13e generation, SSD 1 To, RAM 16 Go, carte graphique 4 Go',
+                'categorie'       => 'INFO',
+                'accessoires'     => ['Souris sans fil', 'Chargeur'],
+            ],
+            [
+                'designation'     => 'Ordinateur portable',
+                'marque'          => 'HP',
+                'modele'          => 'Omen',
+                'description'     => 'Core i5, RAM 8 Go, SSD 128 Go, HDD 1 To, GTX 960',
+                'categorie'       => 'INFO',
+                'accessoires'     => ['Chargeur'],
+            ],
+        ];
+
+        foreach ($equipements as $e) {
+            $materiel = Materiel::updateOrCreate(
+                ['designation' => $e['designation'], 'marque' => $e['marque'], 'modele' => $e['modele']],
+                [
+                    'categorie_id'    => $cat[$e['categorie']],
+                    'description'     => $e['description'] ?? null,
+                    'quantite_totale' => 1,
+                    'etat'            => EtatMateriel::Bon,
+                    'actif'           => true,
+                ]
+            );
+
+            foreach ($e['accessoires'] as $libelle) {
+                Accessoire::updateOrCreate(
+                    ['materiel_id' => $materiel->id, 'libelle' => $libelle],
+                    ['quantite' => 1, 'actif' => true]
+                );
+            }
+        }
+
+        // A COMPLETER : numeros de serie et codes d'inventaire,
+        // a recuperer aupres du depositaire comptable.
     }
 }
