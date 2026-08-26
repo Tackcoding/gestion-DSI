@@ -12,19 +12,21 @@ class DroitConge extends Model
 
     protected $table = 'droits_conges';
 
-    protected $fillable = ['agent_id', 'annee', 'jours_bloc', 'jours_fil_de_eau'];
+    protected $fillable = ['agent_id', 'type_id', 'annee', 'jours_accordes'];
 
     protected function casts(): array
     {
-        return [
-            'jours_bloc'       => 'decimal:1',
-            'jours_fil_de_eau' => 'decimal:1',
-        ];
+        return ['jours_accordes' => 'decimal:1'];
     }
 
     public function agent(): BelongsTo
     {
         return $this->belongsTo(Agent::class);
+    }
+
+    public function type(): BelongsTo
+    {
+        return $this->belongsTo(TypeAbsence::class, 'type_id');
     }
 
     // Le solde restant n'est pas stocke : il se calcule dans CongeService.

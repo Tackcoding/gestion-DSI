@@ -1,0 +1,57 @@
+========================================================
+  Regles de conges — mise a jour
+========================================================
+
+REGLES RETENUES
+---------------
+  Conge annuel : 30 jours par an
+  Permission   : 30 jours par an, MAIS 2 jours maximum par demande
+  Maladie      : pas de quota, justificatif obligatoire
+  Formation    : pas de quota
+  Absence non justifiee : constatee, pas demandee
+
+CE QUI CHANGE PAR RAPPORT AU PREMIER SCHEMA
+-------------------------------------------
+Le decoupage "15 jours bloc + 15 jours au fil de l'eau" disparait.
+
+  types_absence
+    + quota_annuel            (30 pour conge et permission, NULL sinon)
+    + duree_max_par_demande   (2 pour la permission, NULL sinon)
+    - quota_type              (supprime)
+
+  droits_conges
+    + type_id                 (un droit par agent, par annee ET par type)
+    + jours_accordes
+    - jours_bloc              (supprime)
+    - jours_fil_de_eau        (supprime)
+    contrainte unique : (agent_id, annee) devient (agent_id, annee, type_id)
+
+Pourquoi porter le quota sur le TYPE plutot que sur des colonnes en dur :
+si la direction ajoute demain un "conge exceptionnel" de 5 jours,
+c'est une ligne a saisir dans l'administration, pas une migration.
+
+INSTALLATION
+------------
+    php artisan migrate
+    php artisan db:seed --class=Database\\Seeders\\TypeAbsenceSeeder
+    php artisan db:seed --class=Database\\Seeders\\DroitCongeSeeder
+
+Verification rapide en tinker :
+
+    $a = App\Models\Agent::first();
+    $t = App\Models\TypeAbsence::where('code','permission')->first();
+    app(App\Services\CongeService::class)->soldeRestant($a, $t);   // 30
+
+    // doit lever une exception : 5 jours ouvres > plafond de 2
+    app(App\Services\CongeService::class)
+        ->verifierDemande($a, $t, '2026-09-07', '2026-09-11');
+
+TROIS REGLES VERIFIEES A CHAQUE DEMANDE
+---------------------------------------
+  1. plafond par demande      (permission : 2 jours)
+  2. chevauchement            (pas deux absences validees sur la meme periode)
+  3. solde annuel restant     (30 jours)
+
+Le calcul des jours EXCLUT samedi et dimanche.
+A CONFIRMER : les jours feries malgaches ne sont pas encore geres.
+Si la direction les decompte, il faudra une table jours_feries.
