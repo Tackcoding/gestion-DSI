@@ -139,6 +139,7 @@
                         </div>
                     </div>
 
+                <div class="grid grid-cols-2 gap-4">
                     <div>
                         <label class="libelle">Demandeur</label>
                         <select wire:model="demandeur_id" class="champ mt-1">
@@ -150,6 +151,23 @@
                         @error('demandeur_id') <span class="erreur">{{ $message }}</span> @enderror
                     </div>
 
+                    {{-- Le statut ne se choisit qu'en modification : a la creation,
+                        l'evenement demarre toujours en brouillon et se valide ensuite. --}}
+                    @if ($evenementId)
+                        <div>
+                            <label class="libelle">Statut</label>
+                            <select wire:model="statut" class="champ mt-1">
+                                @foreach ($statuts as $s)
+                                    <option value="{{ $s->value }}">{{ $s->libelle() }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                    @else
+                        <div class="flex items-end pb-2 text-sm text-[var(--gris)]">
+                            L'événement sera créé en brouillon.
+                        </div>
+                    @endif
+                </div>
                     <div>
                         <label class="libelle">Description</label>
                         <textarea wire:model="description" rows="3"

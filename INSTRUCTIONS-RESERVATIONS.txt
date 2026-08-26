@@ -1,0 +1,75 @@
+========================================================
+  Module reservations de materiel
+========================================================
+
+1. GATES A DECLARER
+-------------------
+Dans app/Providers/AppServiceProvider.php, methode boot() :
+
+    use App\Enums\RoleUtilisateur;
+    use Illuminate\Support\Facades\Gate;
+
+    public function boot(): void
+    {
+        Gate::define('valider-reservation', fn ($user) =>
+            $user->role->peutValiderReservation());
+
+        Gate::define('valider-absence', fn ($user) =>
+            $user->role->peutValiderAbsence());
+
+        Gate::define('gerer-materiel', fn ($user) => in_array($user->role, [
+            RoleUtilisateur::Depositaire,
+            RoleUtilisateur::Administrateur,
+        ], true));
+
+        Gate::define('administrer', fn ($user) =>
+            $user->role === RoleUtilisateur::Administrateur);
+    }
+
+Sans ces Gates, @can('valider-reservation') renvoie toujours false
+et les boutons Valider / Refuser n'apparaitront jamais.
+
+
+2. AFFICHER LE BLOC DANS LE DETAIL DE L'EVENEMENT
+--------------------------------------------------
+Dans resources/views/evenements/show.blade.php, apres le composant
+detail-evenement, ajouter :
+
+    <div class="mt-10">
+        @livewire('reservations.reservations-evenement', ['evenement' => $evenement])
+    </div>
+
+
+3. RATTACHER TON COMPTE A UN AGENT
+-----------------------------------
+Le composant identifie le demandeur via auth()->user()->agent.
+Ton compte "Tack" n'est rattache a aucun agent : il retombe donc sur
+le premier agent de la liste (solution provisoire, marquee dans le code).
+
+Pour faire les choses proprement, en tinker :
+
+    $u = App\Models\User::where('email','tack@midsp.mg')->first();
+    $a = App\Models\Agent::where('nom','RAKOTOARISOA')->first();  // depositaire
+    $a->update(['user_id' => $u->id]);
+
+Et donne-toi le role qui va avec :
+
+    $u->update(['role' => 'depositaire']);
+
+(ou 'administrateur' pour tout voir)
+
+
+4. CE QU'IL FAUT TESTER
+------------------------
+  a. Reserver 1 light box (quantite totale : 1) sur une periode
+     -> la demande passe
+  b. La valider
+  c. Reserver le meme light box sur une periode QUI CHEVAUCHE
+     -> le bandeau doit passer au rouge AVANT l'envoi
+     -> et l'enregistrement doit etre refuse
+  d. Reserver le meme light box sur une periode qui NE chevauche pas
+     -> ca doit passer
+
+Le point (c) est le coeur technique du projet : la verification
+a l'affichage n'est qu'un confort, c'est le verrou dans
+ReservationService::creer() qui garantit reellement la coherence.
