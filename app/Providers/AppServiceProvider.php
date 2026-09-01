@@ -14,18 +14,11 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
-        Gate::define('valider-reservation', fn ($user) =>
-            $user->role->peutValiderReservation());
-
-        Gate::define('valider-absence', fn ($user) =>
-            $user->role->peutValiderAbsence());
-
-        Gate::define('gerer-materiel', fn ($user) => in_array($user->role, [
-            RoleUtilisateur::Depositaire,
-            RoleUtilisateur::Administrateur,
-        ], true));
-
-        Gate::define('administrer', fn ($user) =>
-            $user->role === RoleUtilisateur::Administrateur);
+        Gate::define('gerer-materiel',       fn ($u) => $u->role->peutGererMateriel());
+        Gate::define('gerer-evenements',     fn ($u) => $u->role->peutGererEvenements());
+        Gate::define('gerer-agents',         fn ($u) => $u->role->peutGererAgents());
+        Gate::define('valider-reservation',  fn ($u) => $u->role->peutValiderReservation());
+        Gate::define('valider-absence',      fn ($u) => $u->role->peutValiderAbsence());
+        Gate::define('administrer',          fn ($u) => $u->role->estResponsable());
     }
 }

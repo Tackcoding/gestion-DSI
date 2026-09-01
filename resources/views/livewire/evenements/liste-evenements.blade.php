@@ -26,10 +26,13 @@
             </select>
         </div>
 
+
+        @can('gerer-evenements')
         <button wire:click="ouvrirCreation"
                 class="btn btn-principal">
             + Nouvel evenement
         </button>
+        @endcan
     </div>
 
     <div class="carte overflow-x-auto">
@@ -75,20 +78,28 @@
                                 {{ $evenement->statut->libelle() }}
                             </span>
                         </td>
-                        <td class="px-4 py-3 text-right text-sm whitespace-nowrap">
-                            <a href="{{ route('evenements.show', $evenement) }}"
-                               class="lien-action">Detail</a>
 
-                            @if ($evenement->statut->value === 'brouillon')
-                                <button wire:click="valider({{ $evenement->id }})"
-                                        class="ml-3 text-green-600 hover:text-green-900">Valider</button>
-                            @endif
 
-                            <button wire:click="ouvrirEdition({{ $evenement->id }})"
-                                    class="lien-action ms-4">Modifier</button>
-                            <button wire:click="confirmerSuppression({{ $evenement->id }})"
-                                    class="lien-alerte ms-4">Supprimer</button>
+
+                      <td class="whitespace-nowrap text-right">
+                            <a href="{{ route('evenements.detail', $evenement) }}" class="lien-action">
+                                Detail
+                            </a>
+
+                            @can('gerer-evenements')
+                                @if ($evenement->statut->value === 'brouillon')
+                                    <button wire:click="valider({{ $evenement->id }})"
+                                            class="lien-action ms-4">Valider</button>
+                                @endif
+                                <button wire:click="ouvrirEdition({{ $evenement->id }})"
+                                        class="lien-action ms-4">Modifier</button>
+                                <button wire:click="confirmerSuppression({{ $evenement->id }})"
+                                        class="lien-alerte ms-4">Supprimer</button>
+                            @endcan
                         </td>
+
+
+
                     </tr>
                 @empty
                     <tr>

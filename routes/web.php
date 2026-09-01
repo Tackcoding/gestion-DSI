@@ -16,13 +16,19 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
-    Route::view('/materiels', 'materiels.index')->name('materiels.index');
-    Route::view('/agents', 'agents.index')->name('agents.index');
-        Route::view('/evenements', 'evenements.index')->name('evenements.index');
+    Route::view('/materiels', 'materiels.index')
+        ->middleware('can:gerer-materiel')
+        ->name('materiels.index');
+
+    Route::view('/agents', 'agents.index')
+        ->middleware('can:gerer-agents')
+        ->name('agents.index');
+
+    Route::view('/evenements', 'evenements.index')->name('evenements.index');
 
     Route::get('/evenements/{evenement}', function (App\Models\Evenement $evenement) {
         return view('evenements.show', compact('evenement'));
-    })->name('evenements.show');
+    })->name('evenements.detail');
 });
 
 require base_path('routes/auth.php');

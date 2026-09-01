@@ -6,8 +6,8 @@ enum RoleUtilisateur: string
 {
     case Agent          = 'agent';
     case ChefService    = 'chef_service';
-    case Directeur      = 'directeur';
     case Depositaire    = 'depositaire';
+    case Directeur      = 'directeur';
     case Administrateur = 'administrateur';
 
     public function libelle(): string
@@ -15,20 +15,44 @@ enum RoleUtilisateur: string
         return match ($this) {
             self::Agent          => 'Agent',
             self::ChefService    => 'Chef de service',
-            self::Directeur      => 'Directeur',
             self::Depositaire    => 'Dépositaire comptable',
+            self::Directeur      => 'Directeur',
             self::Administrateur => 'Administrateur',
         };
     }
 
-    /** A ajuster une fois les niveaux de validation confirmes par la DSI. */
+    public function estResponsable(): bool
+    {
+        return in_array($this, [self::Directeur, self::Administrateur], true);
+    }
+
+    public function peutGererMateriel(): bool
+    {
+        return $this === self::Depositaire || $this->estResponsable();
+    }
+
+    public function peutGererEvenements(): bool
+    {
+        return $this === self::ChefService || $this->estResponsable();
+    }
+
     public function peutValiderAbsence(): bool
     {
-        return in_array($this, [self::ChefService, self::Directeur, self::Administrateur], true);
+        return $this === self::ChefService || $this->estResponsable();
     }
 
     public function peutValiderReservation(): bool
     {
-        return in_array($this, [self::Depositaire, self::Directeur, self::Administrateur], true);
+        return $this === self::ChefService || $this->estResponsable();
+    }
+
+    public function peutGererAgents(): bool
+    {
+        return $this === self::ChefService || $this->estResponsable();
+    }
+
+    public function estLectureSeule(): bool
+    {
+        return $this === self::Agent;
     }
 }

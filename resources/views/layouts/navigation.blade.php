@@ -14,17 +14,22 @@
                         Accueil
                     </x-nav-link>
 
+                    {{-- Consultable par tous : l'ecriture est bridee dans les vues. --}}
                     <x-nav-link :href="route('evenements.index')" :active="request()->routeIs('evenements.*')">
                         Événements
                     </x-nav-link>
 
-                    <x-nav-link :href="route('materiels.index')" :active="request()->routeIs('materiels.*')">
-                        Matériel
-                    </x-nav-link>
+                    @can('gerer-materiel')
+                        <x-nav-link :href="route('materiels.index')" :active="request()->routeIs('materiels.*')">
+                            Matériel
+                        </x-nav-link>
+                    @endcan
 
-                    <x-nav-link :href="route('agents.index')" :active="request()->routeIs('agents.*')">
-                        Agents
-                    </x-nav-link>
+                    @can('gerer-agents')
+                        <x-nav-link :href="route('agents.index')" :active="request()->routeIs('agents.*')">
+                            Agents
+                        </x-nav-link>
+                    @endcan
                 </div>
             </div>
 
@@ -41,6 +46,12 @@
                     </x-slot>
 
                     <x-slot name="content">
+                        <div class="border-b border-[var(--trait)] px-4 py-2">
+                            <div class="text-xs text-[var(--gris)]">
+                                {{ Auth::user()->role->libelle() }}
+                            </div>
+                        </div>
+
                         <x-dropdown-link :href="route('profile.edit')">
                             Mon compte
                         </x-dropdown-link>
@@ -77,21 +88,29 @@
             <x-responsive-nav-link :href="route('tableau-de-bord')" :active="request()->routeIs('tableau-de-bord')">
                 Accueil
             </x-responsive-nav-link>
+
             <x-responsive-nav-link :href="route('evenements.index')" :active="request()->routeIs('evenements.*')">
                 Événements
             </x-responsive-nav-link>
-            <x-responsive-nav-link :href="route('materiels.index')" :active="request()->routeIs('materiels.*')">
-                Matériel
-            </x-responsive-nav-link>
-            <x-responsive-nav-link :href="route('agents.index')" :active="request()->routeIs('agents.*')">
-                Agents
-            </x-responsive-nav-link>
+
+            @can('gerer-materiel')
+                <x-responsive-nav-link :href="route('materiels.index')" :active="request()->routeIs('materiels.*')">
+                    Matériel
+                </x-responsive-nav-link>
+            @endcan
+
+            @can('gerer-agents')
+                <x-responsive-nav-link :href="route('agents.index')" :active="request()->routeIs('agents.*')">
+                    Agents
+                </x-responsive-nav-link>
+            @endcan
         </div>
 
         <div class="border-t border-[var(--trait)] pb-1 pt-4">
             <div class="px-4">
                 <div class="text-base font-medium text-[var(--encre)]">{{ Auth::user()->name }}</div>
                 <div class="text-sm text-[var(--gris)]">{{ Auth::user()->email }}</div>
+                <div class="mt-1 text-xs text-[var(--gris)]">{{ Auth::user()->role->libelle() }}</div>
             </div>
 
             <div class="mt-3 space-y-1">

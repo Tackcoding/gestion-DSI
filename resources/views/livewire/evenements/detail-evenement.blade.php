@@ -32,10 +32,12 @@
     <div>
         <div class="mb-3 flex items-center justify-between">
             <h4 class="titre text-lg">Couvertures</h4>
+            @can('gerer-evenements')
             <button wire:click="ouvrirCreationCouverture"
                     class="btn btn-principal">
                 + Ajouter une couverture
             </button>
+            @endcan
         </div>
 
         <div class="space-y-3">
@@ -58,14 +60,16 @@
                                 @endif
                             </div>
                         </div>
-                        <div class="text-sm whitespace-nowrap">
+                       @can('gerer-evenements')
+                        <div class="flex shrink-0 gap-4 text-sm">
                             <button wire:click="ouvrirEquipe({{ $couverture->id }})"
                                     class="lien-action">Equipe</button>
                             <button wire:click="ouvrirEditionCouverture({{ $couverture->id }})"
-                                    class="lien-action ms-4">Modifier</button>
+                                    class="lien-action">Modifier</button>
                             <button wire:click="confirmerSuppressionCouverture({{ $couverture->id }})"
-                                    class="lien-alerte ms-4">Supprimer</button>
+                                    class="lien-alerte">Supprimer</button>
                         </div>
+                    @endcan
                     </div>
 
                     {{-- Equipe mobilisee --}}

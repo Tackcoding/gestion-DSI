@@ -10,9 +10,12 @@
 
     <div class="flex items-center justify-between">
         <h4 class="titre text-lg">Matériel réservé</h4>
-        <button wire:click="ouvrirCreation" class="btn btn-principal">
-            + Réserver du matériel
-        </button>
+
+        @can('gerer-evenements')
+            <button wire:click="ouvrirCreation" class="btn btn-principal">
+                + Réserver du matériel
+            </button>
+        @endcan
     </div>
 
     <div class="carte overflow-x-auto">
@@ -67,8 +70,17 @@
                                     <button wire:click="ouvrirRefus({{ $reservation->id }})"
                                             class="lien-alerte ms-4">Refuser</button>
                                 @endcan
-                                <button wire:click="confirmerSuppression({{ $reservation->id }})"
-                                        class="lien-alerte ms-4">Supprimer</button>
+
+                                @can('gerer-evenements')
+                                    <button wire:click="confirmerSuppression({{ $reservation->id }})"
+                                            class="lien-alerte ms-4">Supprimer</button>
+                                @endcan
+
+                                @cannot('valider-reservation')
+                                    @cannot('gerer-evenements')
+                                        <span class="text-sm text-[var(--gris)]">En attente</span>
+                                    @endcannot
+                                @endcannot
                             @else
                                 <span class="text-sm text-[var(--gris)]">
                                     @if ($reservation->validateur)
@@ -89,7 +101,6 @@
         </table>
     </div>
 
-    {{-- Modale de reservation --}}
     @if ($modaleOuverte)
         <div class="voile">
             <div class="modale max-w-lg">
@@ -128,7 +139,6 @@
                         @error('quantite') <span class="erreur">{{ $message }}</span> @enderror
                     </div>
 
-                    {{-- Disponibilite calculee en direct sur la periode saisie --}}
                     @if ($this->disponibilite)
                         @php $d = $this->disponibilite; @endphp
                         <div @class([
@@ -159,7 +169,6 @@
         </div>
     @endif
 
-    {{-- Modale de refus --}}
     @if ($refusId)
         <div class="voile">
             <div class="modale max-w-md">
@@ -182,7 +191,6 @@
         </div>
     @endif
 
-    {{-- Confirmation de suppression --}}
     @if ($suppressionId)
         <div class="voile">
             <div class="modale max-w-md">
