@@ -14,9 +14,12 @@
                         Accueil
                     </x-nav-link>
 
-                    {{-- Consultable par tous : l'ecriture est bridee dans les vues. --}}
                     <x-nav-link :href="route('evenements.index')" :active="request()->routeIs('evenements.*')">
                         Événements
+                    </x-nav-link>
+
+                     <x-nav-link :href="route('absences.index')" :active="request()->routeIs('absences.*')">
+                    Absences
                     </x-nav-link>
 
                     @can('gerer-materiel')

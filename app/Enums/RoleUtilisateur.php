@@ -38,7 +38,7 @@ enum RoleUtilisateur: string
 
     public function peutValiderAbsence(): bool
     {
-        return $this === self::ChefService || $this->estResponsable();
+        return $this->estResponsable();
     }
 
     public function peutValiderReservation(): bool

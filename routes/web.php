@@ -29,6 +29,12 @@ Route::middleware('auth')->group(function () {
     Route::get('/evenements/{evenement}', function (App\Models\Evenement $evenement) {
         return view('evenements.show', compact('evenement'));
     })->name('evenements.detail');
+
+    Route::view('/absences/validation', 'absences.validation')
+        ->middleware('can:valider-absence')
+        ->name('absences.validation');
+
+    Route::view('/absences', 'absences.index')->name('absences.index');
 });
 
 require base_path('routes/auth.php');
