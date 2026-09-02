@@ -102,6 +102,13 @@
                 </x-responsive-nav-link>
             @endcan
 
+             @can('gerer-materiel')
+                <x-nav-link :href="route('registre.index')" :active="request()->routeIs('registre.*')">
+                    Registre
+                </x-nav-link>
+            @endcan
+
+
             @can('gerer-agents')
                 <x-responsive-nav-link :href="route('agents.index')" :active="request()->routeIs('agents.*')">
                     Agents

@@ -1,0 +1,84 @@
+========================================================
+  Module sorties / retours de materiel
+========================================================
+
+1. ROUTE
+--------
+Dans routes/web.php, groupe middleware('auth') :
+
+    Route::view('/registre', 'mouvements.index')
+        ->middleware('can:gerer-materiel')
+        ->name('registre.index');
+
+
+2. NAVIGATION
+-------------
+Dans layouts/navigation.blade.php, a cote de Materiel
+(bureau ET mobile), sous la meme condition :
+
+    @can('gerer-materiel')
+        <x-nav-link :href="route('registre.index')" :active="request()->routeIs('registre.*')">
+            Registre
+        </x-nav-link>
+    @endcan
+
+
+3. CE QUE FAIT CET ECRAN
+-------------------------
+C'est l'ecran du depositaire comptable. Il repond a la seule
+question qui compte pour lui : ou est le materiel maintenant ?
+
+Trois filtres, qui portent sur l'etat PHYSIQUE et non sur le
+statut administratif :
+
+  A sortir        reservation validee, rien n'est encore parti
+  En circulation  du materiel est sorti et n'est pas revenu
+  Tout            l'ensemble
+
+La colonne "Rendu" affiche 1/2 tant qu'il manque quelque chose,
+et "Complet" quand tout est revenu.
+
+
+4. LA CHECKLIST DES ACCESSOIRES
+--------------------------------
+A la SORTIE : tout est coche par defaut. Le depositaire decoche
+ce qu'il ne remet pas.
+
+Au RETOUR : tout est DECOCHE par defaut. Le depositaire coche ce
+qu'il voit revenir. Un accessoire non coche ouvre un champ
+d'observation.
+
+Ce choix est deliberer : au retour, l'inattention par defaut doit
+signaler un manque, pas le masquer. C'est le genre de detail
+qui se defend bien en soutenance.
+
+
+5. CE QU'IL FAUT TESTER
+------------------------
+  a. Reserver l'ordinateur Asus ExpertBook (2 accessoires :
+     souris et chargeur) et valider la reservation
+  b. Filtre "A sortir" -> la reservation apparait
+  c. Cliquer Sortie : les deux accessoires sont coches -> enregistrer
+  d. Filtre "En circulation" -> la reservation apparait
+  e. Cliquer Retour : cocher SEULEMENT le chargeur, laisser la
+     souris decochee, saisir "non retrouvee"
+     -> le message doit annoncer 1 accessoire manquant
+  f. Choisir l'etat "Hors service" au retour
+     -> le materiel doit disparaitre des materiels reservables
+
+
+6. VERIFICATION EN TINKER
+--------------------------
+    $m = App\Models\Mouvement::latest('id')->first();
+    $m->accessoiresManquants()->pluck('libelle');
+
+Doit renvoyer la souris.
+
+
+A CONFIRMER AVEC LE DEPOSITAIRE COMPTABLE
+------------------------------------------
+  - Que faire d'un accessoire jamais rendu ? Simple trace, ou
+    procedure formelle (proces-verbal, retenue) ?
+  - Un materiel casse doit-il declencher un signalement ecrit ?
+  - Le prêt a une autre direction est-il possible ? Dans ce cas
+    il faudrait un emprunteur externe sur la reservation.
