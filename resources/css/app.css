@@ -2,41 +2,23 @@
 @tailwind components;
 @tailwind utilities;
 
-/*
-|==========================================================================
-| Charte graphique MIDSP — application aux interfaces
-|==========================================================================
-| Source : Charte graphique MIDSP v2, partie 3 « Le digital ».
-| Les jetons ci-dessous sont repris tels quels de la charte : ils ne
-| doivent pas etre modifies ici, mais dans la charte, puis reportes.
-|
-| Niveau d'accessibilite vise : WCAG 2.1 AA.
-*/
-
 :root {
-    /* --- Jetons de la charte, partie 3 --- */
-    --midsp-vert:          #3AAA35;   /* illustration, icones, succes   */
-    --midsp-vert-profond:  #1D561B;   /* titres, boutons, bandeaux      */
-    --midsp-vert-hover:    #174215;   /* survol des boutons             */
-    --midsp-rouge:         #CD3633;   /* erreurs, actions destructrices */
+    --midsp-vert:          #3AAA35;
+    --midsp-vert-profond:  #1D561B;
+    --midsp-vert-hover:    #174215;
+    --midsp-rouge:         #CD3633;
     --midsp-rouge-hover:   #932624;
-    --midsp-or:            #C9A227;   /* focus, filets, avertissements  */
-    --midsp-noir:          #1D1D1B;   /* texte courant                  */
-    --midsp-gris:          #575756;   /* texte secondaire               */
-    --midsp-gris-acier:    #9D9D9C;   /* bordures, elements inactifs    */
-    --midsp-gris-fond:     #F2F2F2;   /* fonds de section               */
+    --midsp-or:            #C9A227;
+    --midsp-noir:          #1D1D1B;
+    --midsp-gris:          #575756;
+    --midsp-gris-acier:    #9D9D9C;
+    --midsp-gris-fond:     #F2F2F2;
     --midsp-blanc:         #FFFFFF;
-    --midsp-vert-clair:    #E1F5E0;   /* fond succes                    */
-    --midsp-or-sable:      #EBD793;   /* bandeaux, fond avertissement   */
-    --midsp-rouge-clair:   #F9E7E6;   /* fond erreur                    */
+    --midsp-vert-clair:    #E1F5E0;
+    --midsp-or-sable:      #EBD793;
+    --midsp-rouge-clair:   #F9E7E6;
 }
 
-/*
-| Metropolis est une police libre (licence Unlicense) que la charte
-| demande d'auto-heberger. Deposer les fichiers dans public/fonts/.
-| Tant qu'ils ne sont pas fournis, la pile de secours prend le relais :
-| c'est precisement ce que la charte prevoit page 13.
-*/
 @font-face {
     font-family: 'Metropolis';
     src: url('../../public/fonts/Metropolis-Medium.woff2') format('woff2');
@@ -49,12 +31,7 @@
     font-weight: 700;
     font-display: swap;
 }
-/*
-|--------------------------------------------------------------------------
-| Base
-|--------------------------------------------------------------------------
-| Charte p.18 : texte courant 16 px, interligne 1,5, en Noir Encre.
-*/
+
 body {
     font-family: Arial, 'Liberation Sans', 'Helvetica Neue', sans-serif;
     font-size: 16px;
@@ -63,30 +40,11 @@ body {
     background-color: var(--midsp-gris-fond);
 }
 
-/*
-| Anneau de focus : Or, 3 px, decale de 2 px, sur TOUT element
-| interactif (charte p.18). C'est la regle d'accessibilite la plus
-| visible, et celle que les interfaces oublient le plus souvent.
-*/
 :focus-visible {
     outline: 3px solid var(--midsp-or);
     outline-offset: 2px;
 }
 
-/*
-|--------------------------------------------------------------------------
-| Typographie
-|--------------------------------------------------------------------------
-| Echelle web de la charte p.13 :
-|   Titre de document  32 px / 40   Metropolis Bold,   Vert Profond
-|   Titre 1            24 px / 32   Metropolis Medium, Vert Profond
-|   Titre 2            20 px / 28   Metropolis Medium, Noir Encre
-|   Corps              16 px / 24   Arial Regular,     Noir Encre
-|   Legende            14 px / 20   Arial Regular,     Gris Industriel
-|
-| Les capitales sont reservees aux titres de documents et aux bandeaux :
-| les titres courants restent en bas de casse.
-*/
 .titre-document {
     font-family: 'Metropolis', Arial, 'Liberation Sans', sans-serif;
     font-weight: 700;
@@ -117,14 +75,6 @@ body {
     color: var(--midsp-gris);
 }
 
-/*
-|--------------------------------------------------------------------------
-| Bandeau — le dispositif signature de la charte
-|--------------------------------------------------------------------------
-| Aplat Or Sable, texte Vert Profond (6,1:1) ou Noir Encre (11,8:1).
-| Jamais de blanc sur l'or : 1,4:1, tres en dessous du seuil.
-| Jamais de degrade non plus.
-*/
 .bandeau {
     background: var(--midsp-or-sable);
     color: var(--midsp-vert-profond);
@@ -134,29 +84,16 @@ body {
     border-bottom: 2px solid var(--midsp-or);
 }
 
-/* Filet de section, en Or Prosperite */
 .filet {
     border-bottom: 1px solid var(--midsp-or);
 }
 
-/*
-|--------------------------------------------------------------------------
-| Surfaces
-|--------------------------------------------------------------------------
-*/
 .carte {
     background: var(--midsp-blanc);
     border: 1px solid var(--midsp-gris-acier);
     border-radius: 4px;
 }
 
-/*
-|--------------------------------------------------------------------------
-| Boutons
-|--------------------------------------------------------------------------
-| Charte p.18 : hauteur 44 px minimum, coins 4 px, libelle Arial 16 px,
-| verbe d'action. Pas de degrade ni d'ombre portee.
-*/
 .btn {
     display: inline-flex;
     align-items: center;
@@ -174,7 +111,7 @@ body {
 
 .btn-principal {
     background: var(--midsp-vert-profond);
-    color: var(--midsp-blanc);                  /* 8,8:1 */
+    color: var(--midsp-blanc);
     border: 1px solid var(--midsp-vert-profond);
 }
 .btn-principal:hover { background: var(--midsp-vert-hover); border-color: var(--midsp-vert-hover); }
@@ -188,7 +125,7 @@ body {
 
 .btn-alerte {
     background: var(--midsp-rouge);
-    color: var(--midsp-blanc);                  /* 5,0:1 */
+    color: var(--midsp-blanc);
     border: 1px solid var(--midsp-rouge);
 }
 .btn-alerte:hover { background: var(--midsp-rouge-hover); border-color: var(--midsp-rouge-hover); }
@@ -201,13 +138,6 @@ body {
     cursor: not-allowed;
 }
 
-/*
-|--------------------------------------------------------------------------
-| Champs
-|--------------------------------------------------------------------------
-| Bordure Gris Acier 1 px, focus Or, erreur Rouge avec message
-| SOUS le champ : la couleur ne porte jamais seule l'information.
-*/
 .champ {
     width: 100%;
     min-height: 44px;
@@ -244,12 +174,6 @@ body {
     margin-top: 0.25rem;
 }
 
-/*
-|--------------------------------------------------------------------------
-| Etats — roles semantiques de la charte p.17
-|--------------------------------------------------------------------------
-| Chaque etat porte une icone ET un texte : la couleur ne suffit pas.
-*/
 .etat {
     display: flex;
     align-items: flex-start;
@@ -273,17 +197,9 @@ body {
 .etat-information   { background: var(--midsp-gris-fond);   color: var(--midsp-gris); }
 .etat-information::before   { content: '\2139'; color: var(--midsp-gris); }
 
-/* Alias conserves : les vues existantes s'appuient dessus */
 .message        { @apply etat etat-succes; }
 .message-erreur { @apply etat etat-erreur; }
 
-/*
-|--------------------------------------------------------------------------
-| Badges d'etat
-|--------------------------------------------------------------------------
-| Carre de couleur + texte : l'information n'est jamais portee par la
-| seule teinte. Le Vert Malagasy sert au signal, pas au texte.
-*/
 .badge {
     display: inline-flex;
     align-items: center;
@@ -312,11 +228,6 @@ body {
 .badge-alerte  { background: var(--midsp-rouge-clair); color: var(--midsp-rouge-hover); }
 .badge-alerte::before  { background: var(--midsp-rouge); }
 
-/*
-|--------------------------------------------------------------------------
-| Tableaux
-|--------------------------------------------------------------------------
-*/
 .tableau { width: 100%; border-collapse: collapse; }
 
 .tableau thead th {
@@ -341,12 +252,6 @@ body {
 .tableau tbody tr { box-shadow: inset 3px 0 0 transparent; transition: box-shadow .12s; }
 .tableau tbody tr:hover { box-shadow: inset 3px 0 0 var(--midsp-vert); }
 
-/*
-|--------------------------------------------------------------------------
-| Liens
-|--------------------------------------------------------------------------
-| Charte p.18 : liens en Vert Profond soulignes ; visites identiques.
-*/
 a { color: var(--midsp-vert-profond); }
 
 .lien-action {
@@ -369,11 +274,6 @@ a { color: var(--midsp-vert-profond); }
 }
 .lien-alerte:hover { color: var(--midsp-rouge-hover); }
 
-/*
-|--------------------------------------------------------------------------
-| Modales
-|--------------------------------------------------------------------------
-*/
 .voile {
     position: fixed;
     inset: 0;
@@ -397,11 +297,6 @@ a { color: var(--midsp-vert-profond); }
     overflow-y: auto;
 }
 
-/*
-|--------------------------------------------------------------------------
-| Accessibilite
-|--------------------------------------------------------------------------
-*/
 @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after {
         transition-duration: .01ms !important;
@@ -409,7 +304,6 @@ a { color: var(--midsp-vert-profond); }
     }
 }
 
-/* Lien d'evitement, visible uniquement au clavier */
 .evitement {
     position: absolute;
     left: -9999px;
@@ -422,15 +316,6 @@ a { color: var(--midsp-vert-profond); }
 }
 .evitement:focus { left: 0; }
 
-/*
-|--------------------------------------------------------------------------
-| Sur-titre de page
-|--------------------------------------------------------------------------
-| La charte p.13 reserve les capitales aux titres de documents et aux
-| bandeaux : les titres courants restent en bas de casse. Le sur-titre
-| des pages, jusqu'ici en petites capitales, passe donc en bas de casse.
-| Pose sur l'Or Sable du bandeau, il est en Vert Profond (6,1:1).
-*/
 .eyebrow {
     font-family: 'Metropolis', Arial, sans-serif;
     font-weight: 500;
