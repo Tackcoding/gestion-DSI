@@ -7,31 +7,31 @@
 
         <title>Connexion &middot; MIDSP</title>
 
-        <link rel="preconnect" href="https://fonts.bunny.net">
-        <link rel="stylesheet"
-              href="https://fonts.bunny.net/css?family=newsreader:400,500,600|public-sans:400,500,600&display=swap">
+        <link rel="icon" href="{{ asset('favicon.ico') }}" sizes="any">
+        <link rel="icon" type="image/png" sizes="32x32" href="{{ asset('img/favicon-32.png') }}">
+        <link rel="apple-touch-icon" href="{{ asset('img/apple-touch-icon.png') }}">
 
         @vite(['resources/css/app.css', 'resources/js/app.js'])
-
-        <style>body { font-family: 'Public Sans', system-ui, sans-serif; }</style>
     </head>
     <body class="antialiased">
         <div class="flex min-h-screen flex-col items-center justify-center px-4 py-10">
 
+            {{-- Ici la place ne manque pas : version complete du logotype,
+                 220 px de large, bien au-dessus des 150 px exiges. --}}
             <div class="mb-8 text-center">
                 <a href="/" class="inline-block">
-                    <x-application-logo class="mx-auto" />
+                    <img src="{{ asset('img/midsp-logo-600.png') }}"
+                         alt="MIDSP — Ministère de l'Industrialisation et du Développement du Secteur Privé"
+                         class="mx-auto h-auto" style="width: 220px;">
                 </a>
-                <p class="eyebrow mt-3">Direction de la Veille et de la Communication</p>
+                <p class="legende mt-4">Direction de la Veille et de la Communication</p>
             </div>
 
             <div class="carte w-full max-w-md px-7 py-8">
                 {{ $slot }}
             </div>
 
-            <p class="mt-6 text-xs text-[var(--gris)]">
-                Accès réservé aux agents de la direction.
-            </p>
+            <p class="legende mt-6">Accès réservé aux agents de la direction.</p>
         </div>
     </body>
 </html>

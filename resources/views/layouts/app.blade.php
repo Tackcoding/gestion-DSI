@@ -7,34 +7,40 @@
 
         <title>MIDSP &middot; Gestion des événements et du matériel</title>
 
-        <link rel="preconnect" href="https://fonts.bunny.net">
-        <link rel="stylesheet"
-              href="https://fonts.bunny.net/css?family=newsreader:400,500,600|public-sans:400,500,600&display=swap">
+        {{-- Symbole seul : exception prevue par la charte p.9 pour les
+             favicons, ou l'acronyme serait illisible sous 64 px. --}}
+        <link rel="icon" href="{{ asset('favicon.ico') }}" sizes="any">
+        <link rel="icon" type="image/png" sizes="32x32" href="{{ asset('img/favicon-32.png') }}">
+        <link rel="apple-touch-icon" href="{{ asset('img/apple-touch-icon.png') }}">
 
         @vite(['resources/css/app.css', 'resources/js/app.js'])
-
-        <style>body { font-family: 'Public Sans', system-ui, sans-serif; }</style>
     </head>
     <body class="antialiased">
+        {{-- Navigation au clavier : premier element atteignable --}}
+        <a href="#contenu" class="evitement">Aller au contenu</a>
+
         <div class="flex min-h-screen flex-col">
             @include('layouts.navigation')
 
             @isset($header)
-                <header class="border-b border-[var(--trait)] bg-white">
-                    <div class="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+                {{-- Bandeau Or Sable : le dispositif que la charte emploie
+                     sur tous ses supports. Texte en Vert Profond (6,1:1),
+                     jamais de blanc sur l'or. --}}
+                <header class="bandeau">
+                    <div class="mx-auto max-w-7xl px-4 py-4 sm:px-6 lg:px-8">
                         {{ $header }}
                     </div>
                 </header>
             @endisset
 
-            <main class="flex-1">
+            <main id="contenu" class="flex-1">
                 {{ $slot }}
             </main>
 
-            <footer class="border-t border-[var(--trait)] bg-white">
-                <div class="mx-auto flex max-w-7xl flex-col gap-1 px-4 py-5 text-xs text-[var(--gris)] sm:flex-row sm:items-center sm:justify-between sm:px-6 lg:px-8">
-                    <span>MIDSP &middot; Direction de la Veille et de la Communication</span>
-                    <span>Gestion des événements, du matériel et des absences</span>
+            <footer class="border-t border-[var(--midsp-gris-acier)] bg-white">
+                <div class="mx-auto flex max-w-7xl flex-col gap-1 px-4 py-5 sm:flex-row sm:items-center sm:justify-between sm:px-6 lg:px-8">
+                    <span class="legende">MIDSP &middot; Direction de la Veille et de la Communication</span>
+                    <span class="legende">Gestion des événements, du matériel et des absences</span>
                 </div>
             </footer>
         </div>

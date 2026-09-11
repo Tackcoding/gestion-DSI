@@ -16,8 +16,9 @@ use RuntimeException;
  * Reservations de materiel rattachees a un evenement.
  *
  * Le calcul de disponibilite et l'enregistrement passent tous deux par
- * ReservationService : c'est lui qui pose le verrou de transaction.
- * Le composant ne fait que de l'interface.
+ * ReservationService : c'est lui qui pose le verrou de transaction et
+ * qui applique la regle du pret externe. Le composant ne fait que de
+ * l'interface.
  */
 class ReservationsEvenement extends Component
 {
@@ -30,6 +31,11 @@ class ReservationsEvenement extends Component
     public int $quantite = 1;
     public string $date_debut = '';
     public string $date_fin = '';
+
+    // --- Pret a une autre direction ---
+    public bool $pretExterne = false;
+    public string $direction_emprunteuse = '';
+    public string $contact_emprunteur = '';
 
     // --- Refus ---
     public ?int $refusId = null;
@@ -45,10 +51,12 @@ class ReservationsEvenement extends Component
     protected function rules(): array
     {
         return [
-            'materiel_id' => 'required|exists:materiels,id',
-            'quantite'    => 'required|integer|min:1',
-            'date_debut'  => 'required|date',
-            'date_fin'    => 'required|date|after:date_debut',
+            'materiel_id'           => 'required|exists:materiels,id',
+            'quantite'              => 'required|integer|min:1',
+            'date_debut'            => 'required|date',
+            'date_fin'              => 'required|date|after:date_debut',
+            'direction_emprunteuse' => 'nullable|string|max:255',
+            'contact_emprunteur'    => 'nullable|string|max:150',
         ];
     }
 
@@ -58,9 +66,22 @@ class ReservationsEvenement extends Component
         'date_fin.after'       => 'Le retour doit etre posterieur au retrait.',
     ];
 
+    /** Le materiel selectionne peut-il sortir de la direction ? */
+    #[Computed]
+    public function materielPretable(): bool
+    {
+        if (! $this->materiel_id) {
+            return false;
+        }
+
+        $materiel = Materiel::with('categorie')->find($this->materiel_id);
+
+        return $materiel && app(ReservationService::class)->estPretable($materiel);
+    }
+
     /**
      * Disponibilite du materiel selectionne sur la periode saisie.
-     * Recalculee a chaque frappe : le formulaire refuse avant l'envoi.
+     * Recalculee a chaque frappe : le formulaire previent avant l'envoi.
      */
     #[Computed]
     public function disponibilite(): ?array
@@ -74,20 +95,34 @@ class ReservationsEvenement extends Component
             return null;
         }
 
-        $service = app(ReservationService::class);
-
-        $dispo = $service->quantiteDisponible(
-            $materiel,
-            $this->date_debut,
-            $this->date_fin,
+        $dispo = app(ReservationService::class)->quantiteDisponible(
+            $materiel, $this->date_debut, $this->date_fin,
         );
 
         return [
-            'materiel'    => $materiel,
-            'total'       => $materiel->quantite_totale,
-            'disponible'  => $dispo,
-            'suffisant'   => $this->quantite <= $dispo,
+            'materiel'   => $materiel,
+            'total'      => $materiel->quantite_totale,
+            'disponible' => $dispo,
+            'suffisant'  => $this->quantite <= $dispo,
         ];
+    }
+
+    /** Changer de materiel peut invalider le pret : on le remet a zero. */
+    public function updatedMaterielId(): void
+    {
+        if (! $this->materielPretable()) {
+            $this->pretExterne = false;
+            $this->direction_emprunteuse = '';
+            $this->contact_emprunteur = '';
+        }
+    }
+
+    public function updatedPretExterne(): void
+    {
+        if (! $this->pretExterne) {
+            $this->direction_emprunteuse = '';
+            $this->contact_emprunteur = '';
+        }
     }
 
     public function ouvrirCreation(): void
@@ -106,17 +141,24 @@ class ReservationsEvenement extends Component
     {
         $data = $this->validate();
 
+        if ($this->pretExterne && blank($this->direction_emprunteuse)) {
+            $this->addError('direction_emprunteuse', 'Indiquez la direction emprunteuse.');
+            return;
+        }
+
         try {
             app(ReservationService::class)->creer([
-                'evenement_id' => $this->evenement->id,
-                'materiel_id'  => $data['materiel_id'],
-                'quantite'     => $data['quantite'],
-                'date_debut'   => $data['date_debut'],
-                'date_fin'     => $data['date_fin'],
-                'demandeur_id' => $this->agentConnecte()->id,
+                'evenement_id'          => $this->evenement->id,
+                'materiel_id'           => $data['materiel_id'],
+                'quantite'              => $data['quantite'],
+                'date_debut'            => $data['date_debut'],
+                'date_fin'              => $data['date_fin'],
+                'demandeur_id'          => $this->agentConnecte()->id,
+                'direction_emprunteuse' => $this->pretExterne ? $data['direction_emprunteuse'] : null,
+                'contact_emprunteur'    => $this->pretExterne ? ($data['contact_emprunteur'] ?: null) : null,
             ]);
         } catch (RuntimeException $e) {
-            // Message metier du service : quantite insuffisante.
+            // Message metier du service : quantite insuffisante ou pret interdit.
             $this->addError('quantite', $e->getMessage());
             return;
         }
@@ -127,7 +169,7 @@ class ReservationsEvenement extends Component
         session()->flash('message', 'Demande de reservation enregistree.');
     }
 
-    // --- Validation par le depositaire ---
+    // --- Validation par le chef de service ou un responsable ---
 
     public function valider(int $id): void
     {
@@ -201,7 +243,10 @@ class ReservationsEvenement extends Component
 
     private function reinitialiser(): void
     {
-        $this->reset(['reservationId', 'materiel_id', 'date_debut', 'date_fin']);
+        $this->reset([
+            'reservationId', 'materiel_id', 'date_debut', 'date_fin',
+            'pretExterne', 'direction_emprunteuse', 'contact_emprunteur',
+        ]);
         $this->quantite = 1;
         $this->resetValidation();
     }

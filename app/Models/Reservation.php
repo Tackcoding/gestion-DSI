@@ -17,7 +17,8 @@ class Reservation extends Model
     protected $fillable = [
         'evenement_id', 'materiel_id', 'quantite',
         'date_debut', 'date_fin', 'statut',
-        'demandeur_id', 'validateur_id', 'valide_le', 'motif_refus',
+        'demandeur_id', 'direction_emprunteuse', 'contact_emprunteur',
+        'validateur_id', 'valide_le', 'motif_refus',
     ];
 
     protected function casts(): array
@@ -29,6 +30,8 @@ class Reservation extends Model
             'statut'     => StatutReservation::class,
         ];
     }
+
+    // --- Relations ---
 
     public function evenement(): BelongsTo
     {
@@ -75,6 +78,14 @@ class Reservation extends Model
         return $this->quantiteSortie() - $this->quantiteRendue();
     }
 
+    /** Le materiel sort-il de la direction ? */
+    public function estUnPretExterne(): bool
+    {
+        return filled($this->direction_emprunteuse);
+    }
+
+    // --- Scopes ---
+
     public function scopeValidees(Builder $query): Builder
     {
         return $query->where('statut', StatutReservation::Validee);
@@ -85,5 +96,10 @@ class Reservation extends Model
     {
         return $query->where('date_debut', '<', $fin)
                      ->where('date_fin', '>', $debut);
+    }
+
+    public function scopePretsExternes(Builder $query): Builder
+    {
+        return $query->whereNotNull('direction_emprunteuse');
     }
 }

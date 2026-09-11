@@ -1,0 +1,75 @@
+========================================================
+  Pret de materiel a une autre direction
+========================================================
+
+Regle confirmee : le pret externe est possible, mais UNIQUEMENT
+pour les supports de communication (roll-up, oriflamme, lettrine,
+light box, cubes). Le materiel audiovisuel et informatique ne sort
+pas de la direction.
+
+Aucune migration : les colonnes direction_emprunteuse et
+contact_emprunteur ont deja ete creees avec les signalements.
+
+
+CE QUI EST REMPLACE
+-------------------
+  app/Services/ReservationService.php
+  app/Models/Reservation.php
+  app/Livewire/Reservations/ReservationsEvenement.php
+  resources/views/livewire/reservations/reservations-evenement.blade.php
+
+Rien d'autre a modifier : ni route, ni navigation, ni Gate.
+
+
+OU LA REGLE EST APPLIQUEE
+--------------------------
+Elle vit dans ReservationService, pas dans le composant :
+
+    public function estPretable(Materiel $materiel): bool
+    {
+        return $materiel->categorie?->code === 'COMM';
+    }
+
+Et elle est verifiee dans creer(), AVANT le controle de stock :
+inutile de bloquer du materiel pour une demande irrecevable.
+
+L'interface, elle, se contente de ne pas proposer la case a cocher
+quand le materiel n'est pas pretable. Mais si quelqu'un contourne
+l'interface, le service refuse quand meme. C'est le meme principe
+que pour la disponibilite : l'affichage informe, le service decide.
+
+
+CE QU'IL FAUT TESTER
+---------------------
+  a. Reserver un ROLL UP MIDSP
+     -> la case « Pret a une autre direction » apparait
+     -> la cocher, saisir « Direction du Cabinet », enregistrer
+     -> la colonne Destination affiche le badge « Pret externe »
+
+  b. Reserver l'ORDINATEUR ASUS EXPERTBOOK
+     -> la case n'apparait pas
+     -> le message « Ce materiel ne peut pas etre prete » s'affiche
+
+  c. Changer de materiel en cours de saisie : roll up (case cochee)
+     puis ExpertBook
+     -> la case doit disparaitre ET le pret etre annule
+     (c'est updatedMaterielId qui s'en charge)
+
+  d. En tinker, forcer le contournement :
+
+        $svc = app(App\Services\ReservationService::class);
+        $svc->creer([
+            'evenement_id' => 4,
+            'materiel_id'  => 8,          // ExpertBook
+            'quantite'     => 1,
+            'date_debut'   => '2026-10-01 08:00',
+            'date_fin'     => '2026-10-02 18:00',
+            'demandeur_id' => 1,
+            'direction_emprunteuse' => 'Direction du Cabinet',
+        ]);
+
+     -> doit lever : « Seuls les supports de communication peuvent
+        etre pretes a une autre direction. »
+
+Le point (d) est celui qui compte : il prouve que la regle tient
+meme sans l'interface.

@@ -3,166 +3,438 @@
 @tailwind utilities;
 
 /*
-| Identite visuelle MIDSP / DVEC
-| Vert institutionnel, encre sombre, rouge reserve aux alertes.
-| Le rouge ne sert JAMAIS de couleur d'accent decorative : il signale
-| un refus, une suppression ou un manquant.
+|==========================================================================
+| Charte graphique MIDSP — application aux interfaces
+|==========================================================================
+| Source : Charte graphique MIDSP v2, partie 3 « Le digital ».
+| Les jetons ci-dessous sont repris tels quels de la charte : ils ne
+| doivent pas etre modifies ici, mais dans la charte, puis reportes.
+|
+| Niveau d'accessibilite vise : WCAG 2.1 AA.
 */
+
 :root {
-    --vert:        #0F5132;
-    --vert-clair:  #E7F0EA;
-    --vert-fonce:  #0A3A24;
-    --encre:       #1C2321;
-    --gris:        #5B6560;
-    --trait:       #DDE2DE;
-    --fond:        #F5F6F4;
-    --alerte:      #9F2B2B;
-    --alerte-clair:#FBEAEA;
-    --ok-clair:    #E7F0EA;
-    --attente:     #8A6D1F;
-    --attente-clair:#FAF3E0;
+    /* --- Jetons de la charte, partie 3 --- */
+    --midsp-vert:          #3AAA35;   /* illustration, icones, succes   */
+    --midsp-vert-profond:  #1D561B;   /* titres, boutons, bandeaux      */
+    --midsp-vert-hover:    #174215;   /* survol des boutons             */
+    --midsp-rouge:         #CD3633;   /* erreurs, actions destructrices */
+    --midsp-rouge-hover:   #932624;
+    --midsp-or:            #C9A227;   /* focus, filets, avertissements  */
+    --midsp-noir:          #1D1D1B;   /* texte courant                  */
+    --midsp-gris:          #575756;   /* texte secondaire               */
+    --midsp-gris-acier:    #9D9D9C;   /* bordures, elements inactifs    */
+    --midsp-gris-fond:     #F2F2F2;   /* fonds de section               */
+    --midsp-blanc:         #FFFFFF;
+    --midsp-vert-clair:    #E1F5E0;   /* fond succes                    */
+    --midsp-or-sable:      #EBD793;   /* bandeaux, fond avertissement   */
+    --midsp-rouge-clair:   #F9E7E6;   /* fond erreur                    */
 }
 
-body {
-    background-color: var(--fond);
-    color: var(--encre);
-}
-
-/* --- Typographie --- */
-.titre {
-    font-family: 'Newsreader', Georgia, serif;
+/*
+| Metropolis est une police libre (licence Unlicense) que la charte
+| demande d'auto-heberger. Deposer les fichiers dans public/fonts/.
+| Tant qu'ils ne sont pas fournis, la pile de secours prend le relais :
+| c'est precisement ce que la charte prevoit page 13.
+*/
+@font-face {
+    font-family: 'Metropolis';
+    src: url('../../public/fonts/Metropolis-Medium.woff2') format('woff2');
     font-weight: 500;
-    letter-spacing: -0.01em;
+    font-display: swap;
+}
+@font-face {
+    font-family: 'Metropolis';
+    src: url('../../public/fonts/Metropolis-Bold.woff2') format('woff2');
+    font-weight: 700;
+    font-display: swap;
+}
+/*
+|--------------------------------------------------------------------------
+| Base
+|--------------------------------------------------------------------------
+| Charte p.18 : texte courant 16 px, interligne 1,5, en Noir Encre.
+*/
+body {
+    font-family: Arial, 'Liberation Sans', 'Helvetica Neue', sans-serif;
+    font-size: 16px;
+    line-height: 1.5;
+    color: var(--midsp-noir);
+    background-color: var(--midsp-gris-fond);
 }
 
-/* Eyebrow : rappelle l'en-tete des documents administratifs */
-.eyebrow {
-    font-size: 0.6875rem;
-    font-weight: 600;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    color: var(--gris);
+/*
+| Anneau de focus : Or, 3 px, decale de 2 px, sur TOUT element
+| interactif (charte p.18). C'est la regle d'accessibilite la plus
+| visible, et celle que les interfaces oublient le plus souvent.
+*/
+:focus-visible {
+    outline: 3px solid var(--midsp-or);
+    outline-offset: 2px;
 }
 
-/* --- Signature : le filet double du registre papier --- */
+/*
+|--------------------------------------------------------------------------
+| Typographie
+|--------------------------------------------------------------------------
+| Echelle web de la charte p.13 :
+|   Titre de document  32 px / 40   Metropolis Bold,   Vert Profond
+|   Titre 1            24 px / 32   Metropolis Medium, Vert Profond
+|   Titre 2            20 px / 28   Metropolis Medium, Noir Encre
+|   Corps              16 px / 24   Arial Regular,     Noir Encre
+|   Legende            14 px / 20   Arial Regular,     Gris Industriel
+|
+| Les capitales sont reservees aux titres de documents et aux bandeaux :
+| les titres courants restent en bas de casse.
+*/
+.titre-document {
+    font-family: 'Metropolis', Arial, 'Liberation Sans', sans-serif;
+    font-weight: 700;
+    font-size: 2rem;
+    line-height: 2.5rem;
+    color: var(--midsp-vert-profond);
+}
+
+.titre {
+    font-family: 'Metropolis', Arial, 'Liberation Sans', sans-serif;
+    font-weight: 500;
+    font-size: 1.5rem;
+    line-height: 2rem;
+    color: var(--midsp-vert-profond);
+}
+
+.titre-2 {
+    font-family: 'Metropolis', Arial, 'Liberation Sans', sans-serif;
+    font-weight: 500;
+    font-size: 1.25rem;
+    line-height: 1.75rem;
+    color: var(--midsp-noir);
+}
+
+.legende {
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+    color: var(--midsp-gris);
+}
+
+/*
+|--------------------------------------------------------------------------
+| Bandeau — le dispositif signature de la charte
+|--------------------------------------------------------------------------
+| Aplat Or Sable, texte Vert Profond (6,1:1) ou Noir Encre (11,8:1).
+| Jamais de blanc sur l'or : 1,4:1, tres en dessous du seuil.
+| Jamais de degrade non plus.
+*/
+.bandeau {
+    background: var(--midsp-or-sable);
+    color: var(--midsp-vert-profond);
+    font-family: 'Metropolis', Arial, sans-serif;
+    font-weight: 500;
+    padding: 0.75rem 1.25rem;
+    border-bottom: 2px solid var(--midsp-or);
+}
+
+/* Filet de section, en Or Prosperite */
 .filet {
-    border-bottom: 3px double var(--trait);
+    border-bottom: 1px solid var(--midsp-or);
 }
 
-/* --- Surfaces --- */
+/*
+|--------------------------------------------------------------------------
+| Surfaces
+|--------------------------------------------------------------------------
+*/
 .carte {
-    background: #fff;
-    border: 1px solid var(--trait);
-    border-radius: 6px;
+    background: var(--midsp-blanc);
+    border: 1px solid var(--midsp-gris-acier);
+    border-radius: 4px;
 }
 
-/* --- Boutons --- */
+/*
+|--------------------------------------------------------------------------
+| Boutons
+|--------------------------------------------------------------------------
+| Charte p.18 : hauteur 44 px minimum, coins 4 px, libelle Arial 16 px,
+| verbe d'action. Pas de degrade ni d'ombre portee.
+*/
 .btn {
     display: inline-flex;
     align-items: center;
+    justify-content: center;
     gap: 0.5rem;
-    padding: 0.5rem 0.95rem;
-    border-radius: 5px;
-    font-size: 0.875rem;
-    font-weight: 500;
-    line-height: 1.25rem;
+    min-height: 44px;
+    padding: 0.5rem 1.25rem;
+    border-radius: 4px;
+    font-size: 1rem;
+    line-height: 1.5rem;
+    font-weight: 400;
     transition: background-color .15s, border-color .15s, color .15s;
+    cursor: pointer;
 }
-.btn:focus-visible { outline: 2px solid var(--vert); outline-offset: 2px; }
 
-.btn-principal   { background: var(--vert); color: #fff; }
-.btn-principal:hover { background: var(--vert-fonce); }
+.btn-principal {
+    background: var(--midsp-vert-profond);
+    color: var(--midsp-blanc);                  /* 8,8:1 */
+    border: 1px solid var(--midsp-vert-profond);
+}
+.btn-principal:hover { background: var(--midsp-vert-hover); border-color: var(--midsp-vert-hover); }
 
-.btn-secondaire  { background: #fff; color: var(--encre); border: 1px solid var(--trait); }
-.btn-secondaire:hover { background: var(--fond); }
+.btn-secondaire {
+    background: var(--midsp-blanc);
+    color: var(--midsp-vert-profond);
+    border: 1px solid var(--midsp-vert-profond);
+}
+.btn-secondaire:hover { background: var(--midsp-gris-fond); }
 
-.btn-alerte      { background: var(--alerte); color: #fff; }
-.btn-alerte:hover { filter: brightness(.9); }
+.btn-alerte {
+    background: var(--midsp-rouge);
+    color: var(--midsp-blanc);                  /* 5,0:1 */
+    border: 1px solid var(--midsp-rouge);
+}
+.btn-alerte:hover { background: var(--midsp-rouge-hover); border-color: var(--midsp-rouge-hover); }
 
-/* --- Champs --- */
+.btn:disabled,
+.btn[disabled] {
+    background: var(--midsp-gris-fond);
+    color: var(--midsp-gris);
+    border-color: var(--midsp-gris-acier);
+    cursor: not-allowed;
+}
+
+/*
+|--------------------------------------------------------------------------
+| Champs
+|--------------------------------------------------------------------------
+| Bordure Gris Acier 1 px, focus Or, erreur Rouge avec message
+| SOUS le champ : la couleur ne porte jamais seule l'information.
+*/
 .champ {
     width: 100%;
-    padding: 0.5rem 0.7rem;
-    border: 1px solid var(--trait);
-    border-radius: 5px;
-    background: #fff;
-    font-size: 0.875rem;
-    color: var(--encre);
+    min-height: 44px;
+    padding: 0.5rem 0.75rem;
+    border: 1px solid var(--midsp-gris-acier);
+    border-radius: 4px;
+    background: var(--midsp-blanc);
+    font-size: 1rem;
+    line-height: 1.5rem;
+    color: var(--midsp-noir);
 }
 .champ:focus {
-    outline: none;
-    border-color: var(--vert);
-    box-shadow: 0 0 0 3px var(--vert-clair);
+    outline: 3px solid var(--midsp-or);
+    outline-offset: 2px;
+    border-color: var(--midsp-vert-profond);
 }
-.champ::placeholder { color: #9AA39E; }
+.champ::placeholder { color: var(--midsp-gris); }
+
+.champ-erreur { border-color: var(--midsp-rouge); border-width: 2px; }
 
 .libelle {
     display: block;
-    font-size: 0.8125rem;
-    font-weight: 500;
-    color: var(--encre);
-    margin-bottom: 0.3rem;
+    font-size: 1rem;
+    line-height: 1.5rem;
+    color: var(--midsp-noir);
+    margin-bottom: 0.375rem;
 }
 
-.erreur { font-size: 0.8125rem; color: var(--alerte); margin-top: 0.25rem; display: block; }
+.erreur {
+    display: block;
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+    color: var(--midsp-rouge);
+    margin-top: 0.25rem;
+}
 
-/* --- Badges d'etat : carre discret + texte, pas de pastille pleine --- */
+/*
+|--------------------------------------------------------------------------
+| Etats — roles semantiques de la charte p.17
+|--------------------------------------------------------------------------
+| Chaque etat porte une icone ET un texte : la couleur ne suffit pas.
+*/
+.etat {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.625rem;
+    padding: 0.75rem 1rem;
+    border-radius: 4px;
+    font-size: 1rem;
+    line-height: 1.5rem;
+}
+.etat::before { flex-shrink: 0; font-weight: 700; line-height: 1.5rem; }
+
+.etat-succes        { background: var(--midsp-vert-clair);  color: var(--midsp-vert-profond); }
+.etat-succes::before        { content: '\2713'; color: var(--midsp-vert); }
+
+.etat-avertissement { background: var(--midsp-or-sable);    color: var(--midsp-noir); }
+.etat-avertissement::before { content: '\26A0'; color: var(--midsp-or); }
+
+.etat-erreur        { background: var(--midsp-rouge-clair); color: var(--midsp-rouge-hover); }
+.etat-erreur::before        { content: '\2715'; color: var(--midsp-rouge); }
+
+.etat-information   { background: var(--midsp-gris-fond);   color: var(--midsp-gris); }
+.etat-information::before   { content: '\2139'; color: var(--midsp-gris); }
+
+/* Alias conserves : les vues existantes s'appuient dessus */
+.message        { @apply etat etat-succes; }
+.message-erreur { @apply etat etat-erreur; }
+
+/*
+|--------------------------------------------------------------------------
+| Badges d'etat
+|--------------------------------------------------------------------------
+| Carre de couleur + texte : l'information n'est jamais portee par la
+| seule teinte. Le Vert Malagasy sert au signal, pas au texte.
+*/
 .badge {
     display: inline-flex;
     align-items: center;
     gap: 0.4rem;
-    font-size: 0.75rem;
-    font-weight: 500;
-    padding: 0.15rem 0.5rem 0.15rem 0.4rem;
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+    padding: 0.125rem 0.5rem 0.125rem 0.375rem;
     border-radius: 3px;
 }
 .badge::before {
     content: '';
-    width: 6px; height: 6px;
+    width: 8px; height: 8px;
     border-radius: 1px;
-    background: currentColor;
+    flex-shrink: 0;
 }
-.badge-neutre  { background: var(--fond);          color: var(--gris); }
-.badge-ok      { background: var(--ok-clair);      color: var(--vert); }
-.badge-attente { background: var(--attente-clair); color: var(--attente); }
-.badge-alerte  { background: var(--alerte-clair);  color: var(--alerte); }
 
-/* --- Tableaux : indicateur lateral au survol, pas de fond plein --- */
+.badge-neutre  { background: var(--midsp-gris-fond);   color: var(--midsp-gris); }
+.badge-neutre::before  { background: var(--midsp-gris-acier); }
+
+.badge-ok      { background: var(--midsp-vert-clair);  color: var(--midsp-vert-profond); }
+.badge-ok::before      { background: var(--midsp-vert); }
+
+.badge-attente { background: var(--midsp-or-sable);    color: var(--midsp-noir); }
+.badge-attente::before { background: var(--midsp-or); }
+
+.badge-alerte  { background: var(--midsp-rouge-clair); color: var(--midsp-rouge-hover); }
+.badge-alerte::before  { background: var(--midsp-rouge); }
+
+/*
+|--------------------------------------------------------------------------
+| Tableaux
+|--------------------------------------------------------------------------
+*/
 .tableau { width: 100%; border-collapse: collapse; }
+
 .tableau thead th {
     text-align: left;
-    padding: 0.6rem 0.9rem;
-    font-size: 0.6875rem;
-    font-weight: 600;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: var(--gris);
-    background: var(--fond);
-    border-bottom: 1px solid var(--trait);
-}
-.tableau tbody td {
-    padding: 0.75rem 0.9rem;
+    padding: 0.75rem 1rem;
+    font-family: 'Metropolis', Arial, sans-serif;
+    font-weight: 500;
     font-size: 0.875rem;
-    border-bottom: 1px solid var(--trait);
+    color: var(--midsp-vert-profond);
+    background: var(--midsp-gris-fond);
+    border-bottom: 2px solid var(--midsp-or);
+}
+
+.tableau tbody td {
+    padding: 0.875rem 1rem;
+    font-size: 1rem;
+    line-height: 1.5rem;
+    border-bottom: 1px solid var(--midsp-gris-fond);
     vertical-align: top;
 }
+
 .tableau tbody tr { box-shadow: inset 3px 0 0 transparent; transition: box-shadow .12s; }
-.tableau tbody tr:hover { box-shadow: inset 3px 0 0 var(--vert); }
+.tableau tbody tr:hover { box-shadow: inset 3px 0 0 var(--midsp-vert); }
 
-/* --- Messages --- */
-.message      { border-left: 3px solid var(--vert);   background: var(--ok-clair);     padding: .7rem .9rem; font-size: .875rem; color: var(--vert-fonce); border-radius: 0 5px 5px 0; }
-.message-erreur { border-left: 3px solid var(--alerte); background: var(--alerte-clair); padding: .7rem .9rem; font-size: .875rem; color: var(--alerte); border-radius: 0 5px 5px 0; }
+/*
+|--------------------------------------------------------------------------
+| Liens
+|--------------------------------------------------------------------------
+| Charte p.18 : liens en Vert Profond soulignes ; visites identiques.
+*/
+a { color: var(--midsp-vert-profond); }
 
-/* --- Liens d'action dans les tableaux --- */
-.lien-action { font-size: .875rem; color: var(--vert); }
-.lien-action:hover { text-decoration: underline; }
-.lien-alerte { font-size: .875rem; color: var(--alerte); }
-.lien-alerte:hover { text-decoration: underline; }
+.lien-action {
+    display: inline-block;
+    min-height: 44px;
+    line-height: 44px;
+    font-size: 1rem;
+    color: var(--midsp-vert-profond);
+    text-decoration: underline;
+}
+.lien-action:hover { color: var(--midsp-vert-hover); }
 
-/* --- Modale --- */
-.voile { position: fixed; inset: 0; z-index: 50; display: flex; align-items: center; justify-content: center; padding: 1rem; background: rgba(28,35,33,.5); }
-.modale { width: 100%; background: #fff; border-radius: 8px; padding: 1.5rem; box-shadow: 0 20px 40px -12px rgba(28,35,33,.3); }
+.lien-alerte {
+    display: inline-block;
+    min-height: 44px;
+    line-height: 44px;
+    font-size: 1rem;
+    color: var(--midsp-rouge);
+    text-decoration: underline;
+}
+.lien-alerte:hover { color: var(--midsp-rouge-hover); }
 
+/*
+|--------------------------------------------------------------------------
+| Modales
+|--------------------------------------------------------------------------
+*/
+.voile {
+    position: fixed;
+    inset: 0;
+    z-index: 50;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    background: rgba(29, 29, 27, .55);
+    overflow-y: auto;
+}
+
+.modale {
+    width: 100%;
+    background: var(--midsp-blanc);
+    border-radius: 4px;
+    border-top: 4px solid var(--midsp-or);
+    padding: 1.5rem;
+    box-shadow: 0 20px 40px -12px rgba(29, 29, 27, .3);
+    max-height: 90vh;
+    overflow-y: auto;
+}
+
+/*
+|--------------------------------------------------------------------------
+| Accessibilite
+|--------------------------------------------------------------------------
+*/
 @media (prefers-reduced-motion: reduce) {
-    * { transition: none !important; animation: none !important; }
+    *, *::before, *::after {
+        transition-duration: .01ms !important;
+        animation-duration: .01ms !important;
+    }
+}
+
+/* Lien d'evitement, visible uniquement au clavier */
+.evitement {
+    position: absolute;
+    left: -9999px;
+    top: 0;
+    z-index: 100;
+    padding: 0.75rem 1.25rem;
+    background: var(--midsp-vert-profond);
+    color: var(--midsp-blanc);
+    border-radius: 0 0 4px 0;
+}
+.evitement:focus { left: 0; }
+
+/*
+|--------------------------------------------------------------------------
+| Sur-titre de page
+|--------------------------------------------------------------------------
+| La charte p.13 reserve les capitales aux titres de documents et aux
+| bandeaux : les titres courants restent en bas de casse. Le sur-titre
+| des pages, jusqu'ici en petites capitales, passe donc en bas de casse.
+| Pose sur l'Or Sable du bandeau, il est en Vert Profond (6,1:1).
+*/
+.eyebrow {
+    font-family: 'Metropolis', Arial, sans-serif;
+    font-weight: 500;
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+    color: var(--midsp-vert-profond);
 }

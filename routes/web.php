@@ -37,7 +37,17 @@ Route::middleware('auth')->group(function () {
         ->middleware('can:valider-absence')
         ->name('absences.validation');
 
-    Route::view('/absences', 'absences.index')->name('absences.index');
+   Route::view('/absences', 'absences.index')->name('absences.index');
+
+    Route::view('/signalements', 'signalements.index')
+        ->middleware('can:gerer-materiel')
+        ->name('signalements.index');
+
+    Route::get('/signalements/{signalement}/pv',
+        App\Http\Controllers\SignalementPdfController::class)
+        ->middleware('can:gerer-materiel')
+        ->name('signalements.pdf');
+
 });
 
 require base_path('routes/auth.php');

@@ -1,0 +1,121 @@
+========================================================
+  Application de la charte MIDSP a l'interface
+========================================================
+
+Ce lot remplace l'identite provisoire (vert #0F5132, Newsreader,
+Public Sans) par les jetons officiels de la charte v2, partie 3
+« Le digital ».
+
+
+FICHIERS REMPLACES
+-------------------
+    resources/css/app.css
+    resources/views/layouts/app.blade.php
+    resources/views/layouts/guest.blade.php
+    resources/views/components/nav-link.blade.php
+    resources/views/components/responsive-nav-link.blade.php
+
+Les noms de classes sont inchanges (.carte .btn .champ .badge
+.tableau .modale .titre .eyebrow .filet .voile .message ...) :
+les vues existantes continuent de fonctionner sans modification.
+
+
+CE QUI CHANGE, ET POURQUOI
+---------------------------
+
+1. LA PALETTE
+   Les 14 jetons de la charte remplacent les 8 provisoires.
+       --vert     #0F5132  ->  --midsp-vert-profond  #1D561B
+       --alerte   #9F2B2B  ->  --midsp-rouge         #CD3633
+   L'Or Sable et l'Or Prosperite, absents jusqu'ici, entrent dans
+   l'interface : bandeaux, filets, anneau de focus.
+
+2. LES TYPOGRAPHIES
+   Newsreader et Public Sans laissent place a Metropolis (titres)
+   et Arial (corps), avec l'echelle a cinq niveaux de la charte.
+
+3. L'ANNEAU DE FOCUS
+   Or, 3 px, decale de 2 px, sur tout element interactif.
+   C'est la regle d'accessibilite que l'interface precedente
+   ignorait completement.
+
+4. LES HAUTEURS
+   Boutons, champs et liens d'action passent a 44 px minimum,
+   conformement a la regle des zones tactiles.
+
+5. LE SUR-TITRE DES PAGES
+   La charte reserve les capitales aux titres de documents et aux
+   bandeaux. Le sur-titre des pages, jusqu'ici en petites
+   capitales espacees, passe en bas de casse.
+
+6. L'EN-TETE DE PAGE
+   Il devient un bandeau Or Sable a texte Vert Profond : le
+   dispositif que la charte emploie sur tous ses supports.
+   Ratio 6,1:1, au-dessus du seuil AA.
+
+7. LES ETATS
+   Quatre roles semantiques (succes, avertissement, erreur,
+   information), chacun avec une icone ET un texte. La couleur ne
+   porte jamais seule l'information.
+
+8. LE LIEN D'EVITEMENT
+   « Aller au contenu », invisible a la souris, premier element
+   atteignable au clavier.
+
+
+INSTALLATION
+------------
+    php artisan view:clear
+    npm run dev
+
+Puis parcourir les ecrans. Les classes n'ayant pas change, tout
+doit s'afficher, en couleurs MIDSP.
+
+
+LA POLICE METROPOLIS
+--------------------
+Elle est declaree mais les fichiers ne sont pas fournis : la
+charte demande de les obtenir aupres du Service de la
+Communication et de les auto-heberger.
+
+En attendant, la pile de secours prend le relais (Arial), ce que
+la charte prevoit explicitement page 13. Quand tu auras les
+fichiers, les deposer dans :
+
+    public/fonts/Metropolis-Medium.woff2
+    public/fonts/Metropolis-Bold.woff2
+
+Aucune autre modification ne sera necessaire.
+
+
+CE QU'IL RESTE A VERIFIER TOI-MEME
+-----------------------------------
+1. Parcourir chaque ecran a la touche Tab uniquement, sans
+   souris. Chaque element atteint doit montrer l'anneau dore.
+   C'est le test le plus rapide et le plus revelateur.
+
+2. Verifier qu'aucun texte blanc ne subsiste sur de l'or.
+
+3. Mesurer deux ou trois combinaisons au contrast checker, pour
+   confirmer les ratios annonces par la charte.
+
+
+POUR LE MEMOIRE — section 2.1.4
+--------------------------------
+Ce lot est la demonstration centrale de ton travail : une charte
+ecrite, puis appliquee a un support reel.
+
+Trois constats a documenter, avec captures avant / apres :
+
+  - La charte v1 ne disait rien des interfaces. La v2 a comble ce
+    manque. L'application en est la premiere mise en oeuvre.
+
+  - Certaines regles ne se voient qu'a l'usage : l'anneau de
+    focus et les 44 px de hauteur n'existaient pas dans la
+    premiere version de l'interface, alors meme qu'ils figuraient
+    dans la charte. Une regle ecrite n'est pas une regle
+    appliquee.
+
+  - La regle des capitales a impose de revoir tous les sur-titres.
+    Detail minime, mais il montre qu'une charte se verifie ligne
+    a ligne, pas d'impression generale.

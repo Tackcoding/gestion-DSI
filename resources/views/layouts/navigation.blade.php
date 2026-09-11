@@ -114,6 +114,14 @@
                     Agents
                 </x-responsive-nav-link>
             @endcan
+
+            @can('gerer-materiel')
+                <x-nav-link :href="route('signalements.index')"
+                            :active="request()->routeIs('signalements.*')">
+                    Signalements
+                </x-nav-link>
+            @endcan
+
         </div>
 
         <div class="border-t border-[var(--trait)] pb-1 pt-4">

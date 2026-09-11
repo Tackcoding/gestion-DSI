@@ -16,6 +16,9 @@ use RuntimeException;
  */
 class ReservationService
 {
+    /** Code de la categorie autorisee au pret externe. */
+    private const CATEGORIE_PRETABLE = 'COMM';
+
     /** Quantite encore disponible pour un materiel sur une periode. */
     public function quantiteDisponible(Materiel $materiel, string $debut, string $fin): int
     {
@@ -26,6 +29,16 @@ class ReservationService
             ->sum('quantite');
 
         return max(0, $materiel->quantite_totale - (int) $engagee);
+    }
+
+    /**
+     * Seuls les supports de communication sortent de la direction.
+     * Le materiel audiovisuel et informatique reste a la DVEC : il est
+     * identifie individuellement et sa perte engage une procedure formelle.
+     */
+    public function estPretable(Materiel $materiel): bool
+    {
+        return $materiel->categorie?->code === self::CATEGORIE_PRETABLE;
     }
 
     /**
@@ -40,7 +53,18 @@ class ReservationService
     public function creer(array $data): Reservation
     {
         return DB::transaction(function () use ($data) {
-            $materiel = Materiel::lockForUpdate()->findOrFail($data['materiel_id']);
+            $materiel = Materiel::with('categorie')
+                ->lockForUpdate()
+                ->findOrFail($data['materiel_id']);
+
+            // Regle de pret externe, verifiee avant le stock : inutile de
+            // bloquer du materiel pour une demande irrecevable.
+            if (filled($data['direction_emprunteuse'] ?? null) && ! $this->estPretable($materiel)) {
+                throw new RuntimeException(
+                    'Seuls les supports de communication peuvent etre pretes a une autre '
+                    . "direction. « {$materiel->designation} » ne sort pas de la direction."
+                );
+            }
 
             $disponible = $this->quantiteDisponible(
                 $materiel, $data['date_debut'], $data['date_fin']

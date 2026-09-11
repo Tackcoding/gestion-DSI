@@ -1,0 +1,113 @@
+========================================================
+  Logo MIDSP et sceau — integration
+========================================================
+
+1. OU DEPOSER LES FICHIERS
+---------------------------
+Decompresser a la racine du projet. Les fichiers se placent dans :
+
+    public/favicon.ico
+    public/img/...
+
+Ils sont ainsi accessibles a la fois par le navigateur (asset())
+et par dompdf (public_path()).
+
+
+2. FICHIERS FOURNIS
+--------------------
+Sources recadrees sur le contenu reel (le PNG d'origine avait
+plus de 1300 px de marge vide autour du logo) :
+
+    midsp-logo.png            2207 x 1097   version complete
+    midsp-logo-court.png       912 x  840   symbole + acronyme
+    midsp-symbole.png          912 x  607   symbole seul
+    sceau-republique.png       938 x  717   sceau de la Republique
+
+Versions allegees, pour le web et le PDF :
+
+    midsp-logo-600.png         600 x  298
+    midsp-logo-court-300.png   300 x  276
+    sceau-republique-400.png   400 x  305
+
+Icones (exception « symbole seul », charte page 9) :
+
+    favicon.ico                16 / 32 / 48 / 64 px, fond blanc
+    favicon-16.png
+    favicon-32.png
+    favicon-64.png
+    apple-touch-icon.png       180 px, fond Vert Profond
+    avatar-reseaux-512.png     512 px, fond Vert Profond
+
+
+3. LE PROCES-VERBAL
+--------------------
+resources/views/pdf/signalement.blade.php est remplace.
+
+L'en-tete applique la regle de co-branding de la charte :
+sceau a gauche, logo MIDSP a droite, hauteurs egales (16 mm),
+separes par une colonne vide de 36 % de la largeur — soit bien
+plus que les 2x exiges.
+
+Verification : ouvrir un PV existant, l'en-tete doit afficher
+les deux images. Si elles n'apparaissent pas, verifier que
+dompdf a le droit de lire les fichiers locaux :
+
+    config/dompdf.php  ->  'enable_local_file_access' => true
+
+(c'est la valeur par defaut de barryvdh/laravel-dompdf)
+
+
+4. LE FAVICON DE L'APPLICATION
+-------------------------------
+Dans resources/views/layouts/app.blade.php et guest.blade.php,
+ajouter dans le <head> :
+
+    <link rel="icon" href="{{ asset('favicon.ico') }}" sizes="any">
+    <link rel="icon" type="image/png" sizes="32x32"
+          href="{{ asset('img/favicon-32.png') }}">
+    <link rel="apple-touch-icon" href="{{ asset('img/apple-touch-icon.png') }}">
+
+
+5. LE LOGO DANS LA BARRE DE NAVIGATION
+---------------------------------------
+resources/views/components/application-logo.blade.php contient
+aujourd'hui une marque textuelle. Pour utiliser le vrai logo :
+
+    <img src="{{ asset('img/midsp-logo-court-300.png') }}"
+         alt="MIDSP — Ministère de l'Industrialisation et du Développement du Secteur Privé"
+         {{ $attributes->merge(['class' => 'h-10 w-auto']) }}>
+
+ATTENTION : la charte impose 100 px de large minimum pour la
+version courte. h-10 (40 px de haut) donne environ 43 px de large :
+c'est SOUS le seuil.
+
+Deux options conformes :
+  - h-16 (64 px de haut, environ 70 px de large) : toujours sous
+    le seuil, mais acceptable si la barre est haute ;
+  - garder la marque textuelle actuelle dans la barre, et
+    reserver le logo aux documents et a la page de connexion,
+    ou la place ne manque pas.
+
+C'est une contrainte reelle de ta charte : une barre de navigation
+de 64 px de haut ne peut pas accueillir un logo de 100 px de large
+sans le deformer. A trancher, et a mentionner dans le memoire :
+c'est exactement le genre de tension entre la regle ecrite et
+l'application concrete qui merite d'etre analysee.
+
+
+6. LA PAGE DE CONNEXION
+------------------------
+La, il y a la place. Dans layouts/guest.blade.php, remplacer
+<x-application-logo /> par :
+
+    <img src="{{ asset('img/midsp-logo-600.png') }}"
+         alt="MIDSP — Ministère de l'Industrialisation et du Développement du Secteur Privé"
+         class="mx-auto h-auto" style="width: 220px;">
+
+
+7. CE QUI RESTE A FAIRE
+------------------------
+Les fichiers fournis sont en PNG. La charte prevoit du vectoriel
+(EPS, SVG, PDF) pour l'impression. Demander le SVG au Service de
+la Communication : le PV imprime en A4 gagnerait en nettete, et
+le favicon SVG s'affiche mieux sur les ecrans a haute densite.

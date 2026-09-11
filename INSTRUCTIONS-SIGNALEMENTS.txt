@@ -1,0 +1,127 @@
+========================================================
+  Signalements (perte / casse) + pret externe
+========================================================
+
+Regles confirmees par le depositaire comptable :
+  - accessoire non rendu ou materiel casse -> procedure formelle
+  - le proces-verbal est redige par le depositaire
+  - il n'est opposable qu'apres VISA DU DIRECTEUR
+  - le pret a une autre direction est possible, mais UNIQUEMENT
+    pour les supports de communication
+
+
+1. INSTALLER DOMPDF
+--------------------
+    composer require barryvdh/laravel-dompdf
+
+
+2. MIGRATIONS
+-------------
+    php artisan migrate
+
+Deux migrations :
+  - signalements
+  - direction_emprunteuse + contact_emprunteur sur reservations
+
+
+3. NOUVEAU GATE
+---------------
+Dans app/Providers/AppServiceProvider.php :
+
+    Gate::define('viser-signalement', fn ($u) => $u->role->estResponsable());
+
+Le visa appartient au directeur et a l'administrateur, pas au
+depositaire : celui qui constate ne peut pas se viser lui-meme.
+C'est le principe de separation des taches, et il se defend en
+soutenance.
+
+
+4. ROUTES
+---------
+    Route::view('/signalements', 'signalements.index')
+        ->middleware('can:gerer-materiel')
+        ->name('signalements.index');
+
+    Route::get('/signalements/{signalement}/pv',
+        App\Http\Controllers\SignalementPdfController::class)
+        ->middleware('can:gerer-materiel')
+        ->name('signalements.pdf');
+
+
+5. NAVIGATION
+-------------
+    @can('gerer-materiel')
+        <x-nav-link :href="route('signalements.index')"
+                    :active="request()->routeIs('signalements.*')">
+            Signalements
+        </x-nav-link>
+    @endcan
+
+
+6. PRET EXTERNE — A COMPLETER DANS RESERVATIONS
+------------------------------------------------
+Les colonnes existent, l'interface reste a ajouter dans
+ReservationsEvenement. Deux champs a poser dans la modale, sous
+condition de categorie :
+
+    @if ($this->materielEstUnSupportComm)
+        <div>
+            <label class="libelle">Direction emprunteuse</label>
+            <input type="text" wire:model="direction_emprunteuse" class="champ mt-1">
+            <p class="mt-1 text-xs text-[var(--gris)]">
+                Laisser vide pour un usage interne a la DVEC.
+            </p>
+        </div>
+        <div>
+            <label class="libelle">Contact</label>
+            <input type="text" wire:model="contact_emprunteur" class="champ mt-1">
+        </div>
+    @endif
+
+Et la regle metier, a poser dans ReservationService::creer() :
+
+    if (filled($data['direction_emprunteuse'] ?? null)
+        && $materiel->categorie?->code !== 'COMM') {
+        throw new RuntimeException(
+            'Seuls les supports de communication peuvent etre pretes '
+            . 'a une autre direction.'
+        );
+    }
+
+Dis-moi quand tu veux que je livre cette partie complete.
+
+
+7. LE PROCES-VERBAL PDF
+------------------------
+Le gabarit resources/views/pdf/signalement.blade.php applique la
+charte MIDSP :
+  - bandeaux Or Sable en aplat, texte Vert Profond (6,1:1)
+  - jamais de blanc sur or
+  - filet Or Prosperite sous l'en-tete
+  - Arial 10,5 pt / interligne 1,4 pour le corps
+  - deux blocs de signature : depositaire et visa du directeur
+
+C'est un bon exemple a montrer dans le memoire : la meme charte
+appliquee a un support imprimable et a une interface.
+
+Numerotation : PV-PER-2026-001 ou PV-DET-2026-001, remise a zero
+chaque annee, comme un registre papier.
+
+
+8. CE QU'IL FAUT TESTER
+------------------------
+  a. En depositaire : creer un signalement de casse sur l'ExpertBook
+     -> le materiel doit passer hors service
+     -> statut "En attente de visa"
+  b. Ouvrir le PV : le bloc visa doit afficher "En attente"
+  c. En directeur : viser
+  d. Rouvrir le PV : le nom du directeur et la date doivent apparaitre
+  e. Tenter de viser une seconde fois -> refus
+  f. En depositaire : le bouton Viser ne doit PAS apparaitre
+
+
+A CONFIRMER PLUS TARD
+----------------------
+  - Le PV doit-il porter un numero d'enregistrement du courrier
+    officiel, en plus de la reference interne ?
+  - Faut-il archiver une copie signee scannee ?

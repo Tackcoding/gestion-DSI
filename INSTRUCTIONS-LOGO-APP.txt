@@ -1,0 +1,91 @@
+========================================================
+  Le logo dans l'application
+========================================================
+
+LE PROBLEME
+-----------
+La charte impose 100 px de large minimum pour la version courte
+(symbole + acronyme, empiles). Cette version a un rapport de 1,09 :
+pour faire 100 px de large, il lui faut 92 px de haut.
+
+Une barre de navigation web fait 64 px de haut. Le logo n'y rentre
+pas sans passer sous le seuil de la charte.
+
+
+LA SOLUTION RETENUE
+-------------------
+Une composition horizontale : symbole a gauche, acronyme a droite.
+
+    rapport 3,68  ->  a 40 px de haut, 147 px de large
+                      seuil de 100 px largement respecte
+
+Les proportions internes sont reprises de la version verticale
+d'origine : l'acronyme fait 40 % de la hauteur du symbole, et
+l'ecart entre les deux vaut 22 % de la largeur du symbole.
+
+
+INSTALLATION
+------------
+1. Decompresser a la racine du projet.
+
+2. resources/views/components/application-logo.blade.php est
+   remplace : la marque textuelle laisse place au vrai logo.
+
+3. Dans layouts/app.blade.php et layouts/guest.blade.php, ajouter
+   le favicon dans le <head> :
+
+    <link rel="icon" href="{{ asset('favicon.ico') }}" sizes="any">
+    <link rel="icon" type="image/png" sizes="32x32"
+          href="{{ asset('img/favicon-32.png') }}">
+    <link rel="apple-touch-icon" href="{{ asset('img/apple-touch-icon.png') }}">
+
+4. Sur la page de connexion, la place ne manque pas : utiliser la
+   version complete plutot que l'horizontale. Dans guest.blade.php,
+   remplacer <x-application-logo /> par :
+
+    <img src="{{ asset('img/midsp-logo-600.png') }}"
+         alt="MIDSP — Ministère de l'Industrialisation et du Développement du Secteur Privé"
+         class="mx-auto h-auto" style="width: 220px;">
+
+5. Verifier :
+       php artisan view:clear
+   puis recharger. Le logo doit apparaitre dans la barre et
+   l'onglet du navigateur doit porter le symbole.
+
+
+CE QUE CELA IMPLIQUE POUR LA CHARTE
+------------------------------------
+Cette variante n'existe pas dans la charte v2. Il faut donc, soit :
+
+  - l'ajouter comme quatrieme declinaison officielle, avec ses
+    propres regles (proportions internes, taille minimale de
+    120 px de large, usage reserve aux barres de navigation) ;
+
+  - ou documenter une exception, comme cela a ete fait pour le
+    symbole seul en favicon.
+
+La premiere option est plus propre : une variante qui existe sans
+etre documentee finit recreee de travers par le prestataire suivant.
+
+
+POUR LE MEMOIRE — section 2.1.4
+--------------------------------
+C'est un cas a raconter tel quel. Le raisonnement complet tient
+en quatre temps :
+
+  1. une regle ecrite : 100 px minimum ;
+  2. une contrainte de support : 64 px de hauteur de barre ;
+  3. le constat que les deux sont incompatibles ;
+  4. une variante concue pour lever la contrainte, et la mise a
+     jour de la charte qui en decoule.
+
+C'est exactement ce que le modele attend : montrer que la charte
+n'est pas un document fige mais un outil qui se confronte a ses
+usages. La v1 ne disait rien du numerique ; la v2 l'a couvert ;
+l'application l'a mise a l'epreuve et a revele une regle
+impraticable en l'etat.
+
+A rapprocher du meme raisonnement sur le favicon (charte p.9) :
+la v1 interdisait le symbole seul sans exception, alors qu'un
+site web impose un favicon de 32 px ou l'acronyme est illisible.
+Meme mecanisme, deja identifie pendant l'audit.

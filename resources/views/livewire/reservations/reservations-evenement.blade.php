@@ -25,6 +25,7 @@
                     <th>Matériel</th>
                     <th>Qté</th>
                     <th>Période</th>
+                    <th>Destination</th>
                     <th>Statut</th>
                     <th class="text-right">Actions</th>
                 </tr>
@@ -44,6 +45,19 @@
                         <td class="text-sm text-[var(--gris)]">
                             {{ $reservation->date_debut->format('d/m/Y H:i') }}<br>
                             {{ $reservation->date_fin->format('d/m/Y H:i') }}
+                        </td>
+                        <td class="text-sm">
+                            @if ($reservation->estUnPretExterne())
+                                <span class="badge badge-attente">Prêt externe</span>
+                                <div class="mt-1 text-[var(--gris)]">
+                                    {{ $reservation->direction_emprunteuse }}
+                                    @if ($reservation->contact_emprunteur)
+                                        <br>{{ $reservation->contact_emprunteur }}
+                                    @endif
+                                </div>
+                            @else
+                                <span class="text-[var(--gris)]">Usage interne</span>
+                            @endif
                         </td>
                         <td>
                             <span @class([
@@ -75,12 +89,6 @@
                                     <button wire:click="confirmerSuppression({{ $reservation->id }})"
                                             class="lien-alerte ms-4">Supprimer</button>
                                 @endcan
-
-                                @cannot('valider-reservation')
-                                    @cannot('gerer-evenements')
-                                        <span class="text-sm text-[var(--gris)]">En attente</span>
-                                    @endcannot
-                                @endcannot
                             @else
                                 <span class="text-sm text-[var(--gris)]">
                                     @if ($reservation->validateur)
@@ -92,7 +100,7 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="5" class="py-10 text-center text-[var(--gris)]">
+                        <td colspan="6" class="py-10 text-center text-[var(--gris)]">
                             Aucun matériel réservé pour cet événement.
                         </td>
                     </tr>
@@ -101,6 +109,7 @@
         </table>
     </div>
 
+    {{-- Modale de reservation --}}
     @if ($modaleOuverte)
         <div class="voile">
             <div class="modale max-w-lg">
@@ -139,6 +148,48 @@
                         @error('quantite') <span class="erreur">{{ $message }}</span> @enderror
                     </div>
 
+                    {{-- Pret externe : propose uniquement pour les supports
+                         de communication. Le materiel identifie individuellement
+                         ne sort pas de la direction. --}}
+                    @if ($materiel_id)
+                        @if ($this->materielPretable)
+                            <div class="rounded-md border border-[var(--trait)] p-3">
+                                <label class="flex items-center gap-2">
+                                    <input type="checkbox" wire:model.live="pretExterne"
+                                           class="rounded border-[var(--trait)] text-[var(--vert)] focus:ring-[var(--vert)]">
+                                    <span class="text-sm">Prêt à une autre direction</span>
+                                </label>
+
+                                @if ($pretExterne)
+                                    <div class="mt-3 space-y-3">
+                                        <div>
+                                            <label class="libelle">Direction emprunteuse</label>
+                                            <input type="text" wire:model="direction_emprunteuse"
+                                                   class="champ mt-1"
+                                                   placeholder="Direction du Cabinet, DAAF...">
+                                            @error('direction_emprunteuse')
+                                                <span class="erreur">{{ $message }}</span>
+                                            @enderror
+                                        </div>
+                                        <div>
+                                            <label class="libelle">Contact</label>
+                                            <input type="text" wire:model="contact_emprunteur"
+                                                   class="champ mt-1"
+                                                   placeholder="Nom et téléphone du responsable">
+                                        </div>
+                                    </div>
+                                @endif
+                            </div>
+                        @else
+                            <p class="text-sm text-[var(--gris)]">
+                                Ce matériel ne peut pas être prêté à une autre direction.
+                            </p>
+                        @endif
+                    @endif
+
+                    {{-- Disponibilite calculee en direct sur la periode saisie.
+                         Ce n'est qu'un confort : la verification qui fait foi est
+                         celle de ReservationService, sous verrou de transaction. --}}
                     @if ($this->disponibilite)
                         @php $d = $this->disponibilite; @endphp
                         <div @class([
@@ -169,6 +220,7 @@
         </div>
     @endif
 
+    {{-- Modale de refus --}}
     @if ($refusId)
         <div class="voile">
             <div class="modale max-w-md">
@@ -191,6 +243,7 @@
         </div>
     @endif
 
+    {{-- Confirmation de suppression --}}
     @if ($suppressionId)
         <div class="voile">
             <div class="modale max-w-md">
