@@ -1,95 +1,104 @@
-<div class="space-y-8">
+<div class="registre">
 
     {{-- Aujourd'hui : la premiere question du responsable en arrivant --}}
-    <section>
-        <div class="filet flex items-baseline justify-between pb-2">
-            <h3 class="titre text-lg">Aujourd'hui</h3>
-            <span class="eyebrow">{{ now()->translatedFormat('l j F Y') }}</span>
-        </div>
+    <section class="registre-section">
+        <p class="registre-mention">{{ now()->translatedFormat('l j F Y') }}</p>
+        <h3 class="titre">Aujourd'hui</h3>
 
-        @forelse ($couverturesDuJour as $couverture)
-            <div wire:key="jour-{{ $couverture->id }}" class="carte mt-3 p-4">
-                <div class="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
-                    <div>
-                        <a href="{{ route('evenements.detail', $couverture->evenement) }}"
-                           class="font-medium hover:underline">
-                            {{ $couverture->evenement->intitule }}
-                        </a>
-                        <p class="mt-0.5 text-sm text-[var(--gris)]">
-                            @if ($couverture->heure_depart)
-                                Départ {{ substr($couverture->heure_depart, 0, 5) }}
-                                @if ($couverture->lieu_depart) — {{ $couverture->lieu_depart }} @endif
-                            @else
-                                Horaire non précisé
-                            @endif
-                        </p>
-                    </div>
+        <div class="mt-3">
+            @forelse ($couverturesDuJour as $couverture)
+                <div wire:key="jour-{{ $couverture->id }}"
+                     @class([
+                        'registre-entree',
+                        'registre-entree-active' => $couverture->agents->isNotEmpty(),
+                        'registre-entree-alerte' => $couverture->agents->isEmpty(),
+                     ])>
+                    <div class="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+                        <div>
+                            <a href="{{ route('evenements.detail', $couverture->evenement) }}"
+                               class="font-medium">
+                                {{ $couverture->evenement->intitule }}
+                            </a>
+                            <p class="legende mt-0.5">
+                                @if ($couverture->heure_depart)
+                                    Départ {{ substr($couverture->heure_depart, 0, 5) }}
+                                    @if ($couverture->lieu_depart) — {{ $couverture->lieu_depart }} @endif
+                                @else
+                                    Horaire non précisé
+                                @endif
+                            </p>
+                        </div>
 
-                    <div class="flex flex-wrap gap-1">
-                        @forelse ($couverture->agents as $agent)
-                            <span class="badge badge-ok">{{ $agent->nom }}</span>
-                        @empty
-                            <span class="badge badge-alerte">Aucune équipe affectée</span>
-                        @endforelse
+                        <div class="flex flex-wrap gap-1">
+                            @forelse ($couverture->agents as $agent)
+                                <span class="badge badge-ok">{{ $agent->nom }}</span>
+                            @empty
+                                <span class="badge badge-alerte">Aucune équipe affectée</span>
+                            @endforelse
+                        </div>
                     </div>
                 </div>
-            </div>
-        @empty
-            <div class="carte mt-3 p-6 text-sm text-[var(--gris)]">
-                Aucune couverture prévue aujourd'hui.
-                <a href="{{ route('evenements.index') }}" class="lien-action ms-1">Voir les événements</a>
-            </div>
-        @endforelse
+            @empty
+                <div class="registre-entree">
+                    <p class="text-[var(--midsp-gris)]">
+                        Aucune couverture prévue aujourd'hui.
+                        <a href="{{ route('evenements.index') }}" class="lien-action ms-1">
+                            Voir les événements
+                        </a>
+                    </p>
+                </div>
+            @endforelse
+        </div>
     </section>
 
-    <div class="grid gap-8 lg:grid-cols-3">
+    {{-- Ce qui vient --}}
+    <section class="registre-section">
+        <p class="registre-mention">À venir</p>
+        <h3 class="titre">Prochaines couvertures</h3>
 
-        {{-- Prochaines sorties --}}
-        <section class="lg:col-span-2">
-            <div class="filet pb-2">
-                <h3 class="titre text-lg">Prochaines couvertures</h3>
-            </div>
-
-            <div class="carte mt-3 overflow-hidden">
-                @forelse ($prochainesCouvertures as $couverture)
-                    <div wire:key="prochaine-{{ $couverture->id }}"
-                         class="flex items-baseline justify-between gap-4 border-b border-[var(--trait)] px-4 py-3 last:border-0">
-                        <a href="{{ route('evenements.detail', $couverture->evenement) }}"
-                           class="text-sm hover:underline">
+        <div class="mt-3">
+            @forelse ($prochainesCouvertures as $couverture)
+                <div wire:key="prochaine-{{ $couverture->id }}" class="registre-entree">
+                    <div class="flex items-baseline justify-between gap-4">
+                        <a href="{{ route('evenements.detail', $couverture->evenement) }}">
                             {{ $couverture->evenement->intitule }}
                         </a>
-                        <span class="shrink-0 text-sm text-[var(--gris)]">
+                        <span class="legende shrink-0">
                             {{ $couverture->date->translatedFormat('j M') }}
                         </span>
                     </div>
-                @empty
-                    <p class="px-4 py-6 text-sm text-[var(--gris)]">
+                </div>
+            @empty
+                <div class="registre-entree">
+                    <p class="text-[var(--midsp-gris)]">
                         Rien de programmé pour les jours à venir.
                     </p>
-                @endforelse
-            </div>
-        </section>
+                </div>
+            @endforelse
+        </div>
+    </section>
 
-        {{-- Reperes --}}
-        <section>
-            <div class="filet pb-2">
-                <h3 class="titre text-lg">Repères</h3>
-            </div>
+    {{-- L'etat du registre --}}
+    <section class="registre-section">
+        <p class="registre-mention">État du registre</p>
+        <h3 class="titre">Repères</h3>
 
-            <dl class="carte mt-3 divide-y divide-[var(--trait)]">
-                <div class="flex items-baseline justify-between px-4 py-3">
-                    <dt class="text-sm text-[var(--gris)]">Événements en cours</dt>
-                    <dd class="titre text-xl">{{ $evenementsEnCours }}</dd>
-                </div>
-                <div class="flex items-baseline justify-between px-4 py-3">
-                    <dt class="text-sm text-[var(--gris)]">Agents actifs</dt>
-                    <dd class="titre text-xl">{{ $agentsActifs }}</dd>
-                </div>
-                <div class="flex items-baseline justify-between px-4 py-3">
-                    <dt class="text-sm text-[var(--gris)]">Références de matériel</dt>
-                    <dd class="titre text-xl">{{ $referencesMateriel }}</dd>
-                </div>
-            </dl>
-        </section>
-    </div>
+        <dl class="mt-3">
+            <div class="registre-entree flex items-baseline justify-between">
+                <dt class="text-[var(--midsp-gris)]">Événements en cours</dt>
+                <dd class="titre">{{ $evenementsEnCours }}</dd>
+            </div>
+            <div class="registre-entree flex items-baseline justify-between">
+                <dt class="text-[var(--midsp-gris)]">Agents actifs</dt>
+                <dd class="titre">{{ $agentsActifs }}</dd>
+            </div>
+            <div class="registre-entree flex items-baseline justify-between">
+                <dt class="text-[var(--midsp-gris)]">Références de matériel</dt>
+                <dd class="titre">{{ $referencesMateriel }}</dd>
+            </div>
+        </dl>
+    </section>
+
+    {{-- Le registre se ferme --}}
+    <div class="registre-cloture"></div>
 </div>

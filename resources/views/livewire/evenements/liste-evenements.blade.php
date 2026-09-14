@@ -86,7 +86,7 @@
                                 Detail
                             </a>
 
-                            @can('gerer-evenements')
+                           @can('gerer-evenements')
                                 @if ($evenement->statut->value === 'brouillon')
                                     <button wire:click="valider({{ $evenement->id }})"
                                             class="lien-action ms-4">Valider</button>

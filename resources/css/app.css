@@ -323,3 +323,200 @@ a { color: var(--midsp-vert-profond); }
     line-height: 1.25rem;
     color: var(--midsp-vert-profond);
 }
+
+.btn {
+    transition: background-color 120ms ease,
+                border-color 120ms ease,
+                color 120ms ease,
+                transform 80ms ease;
+}
+
+.btn:active:not(:disabled) {
+    transform: translateY(1px);
+}
+
+.btn[wire\:loading],
+.btn:disabled {
+    opacity: .65;
+    cursor: wait;
+}
+
+.travail::after {
+    content: '';
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    margin-left: 0.5rem;
+    border-radius: 50%;
+    background: currentColor;
+    animation: pulsation 900ms ease-in-out infinite;
+}
+
+@keyframes pulsation {
+    0%, 100% { opacity: .3; }
+    50%      { opacity: 1; }
+}
+
+.champ {
+    transition: border-color 120ms ease, box-shadow 120ms ease;
+}
+
+.lien-action,
+.lien-alerte {
+    text-decoration-thickness: 1px;
+    text-underline-offset: 3px;
+    transition: color 120ms ease, text-decoration-thickness 120ms ease;
+}
+
+.lien-action:hover,
+.lien-alerte:hover {
+    text-decoration-thickness: 2px;
+}
+
+.tableau tbody tr {
+    transition: box-shadow 120ms ease, background-color 120ms ease;
+}
+
+.tableau tbody tr:hover {
+    background-color: var(--midsp-gris-fond);
+}
+
+.voile {
+    animation: voile-entree 150ms ease-out;
+}
+
+.modale {
+    animation: modale-entree 150ms ease-out;
+}
+
+@keyframes voile-entree {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+}
+
+@keyframes modale-entree {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+.etat {
+    animation: etat-entree 150ms ease-out;
+}
+
+@keyframes etat-entree {
+    from { opacity: 0; transform: translateY(-4px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+[wire\:loading\.delay] {
+    opacity: .6;
+    transition: opacity 120ms ease;
+}
+
+.evitement { transition: none; }
+
+@media (prefers-reduced-motion: reduce) {
+    .voile,
+    .modale,
+    .etat {
+        animation: none;
+    }
+
+    .btn:active:not(:disabled) {
+        transform: none;
+    }
+
+    .travail::after {
+        animation: none;
+        opacity: .6;
+    }
+}
+
+.registre {
+    position: relative;
+    padding-left: 2.5rem;
+}
+
+.registre::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0.5rem;
+    bottom: 0.5rem;
+    width: 1px;
+    background: var(--midsp-or);
+}
+
+.registre-section {
+    position: relative;
+    padding-bottom: 2.5rem;
+}
+
+.registre-section:last-child { padding-bottom: 0; }
+
+.registre-section::before {
+    content: '';
+    position: absolute;
+    left: -2.5rem;
+    top: 0.9rem;
+    width: 1.5rem;
+    height: 1px;
+    background: var(--midsp-or);
+}
+
+.registre-mention {
+    font-family: 'Metropolis', Arial, sans-serif;
+    font-weight: 500;
+    font-size: 0.8125rem;
+    line-height: 1.25rem;
+    color: var(--midsp-gris);
+    margin-bottom: 0.125rem;
+}
+
+.registre-entree {
+    position: relative;
+    padding: 0.875rem 0;
+    border-bottom: 1px solid var(--midsp-gris-fond);
+}
+
+.registre-entree:last-child { border-bottom: 0; }
+
+.registre-entree::before {
+    content: '';
+    position: absolute;
+    left: -2.5rem;
+    top: 1.25rem;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--midsp-blanc);
+    border: 1px solid var(--midsp-or);
+    transform: translateX(-3px);
+}
+
+.registre-entree-active::before {
+    background: var(--midsp-vert);
+    border-color: var(--midsp-vert);
+}
+
+.registre-entree-alerte::before {
+    background: var(--midsp-rouge);
+    border-color: var(--midsp-rouge);
+}
+
+.registre-cloture {
+    position: relative;
+    margin-left: -2.5rem;
+    width: 1.5rem;
+    border-top: 1px solid var(--midsp-or);
+    border-bottom: 1px solid var(--midsp-or);
+    height: 3px;
+    margin-top: 0.5rem;
+}
+
+@media (max-width: 640px) {
+    .registre { padding-left: 1.25rem; }
+    .registre-section::before { left: -1.25rem; width: 0.75rem; }
+    .registre-entree::before  { left: -1.25rem; }
+    .registre-cloture { margin-left: -1.25rem; width: 0.75rem; }
+}
