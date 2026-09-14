@@ -21,3 +21,8 @@ yarn-error.log
 /.nova
 /.vscode
 /.zed
+# Fichiers d'instructions temporaires
+/INSTRUCTIONS-*.txt
+/ROUTE-A-AJOUTER.txt
+/ROUTES-EVENEMENTS.txt
+/NOTES-*.txt
