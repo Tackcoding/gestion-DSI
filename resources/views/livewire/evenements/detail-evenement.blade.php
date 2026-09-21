@@ -1,225 +1,181 @@
 <div class="space-y-6">
 
     @if (session('message'))
-        <div class="message">
-            {{ session('message') }}
-        </div>
+        <div class="message">{{ session('message') }}</div>
     @endif
 
-    {{-- En-tete de l'evenement --}}
+    {{-- Fiche de l'événement --}}
     <div class="carte p-5">
-        <div class="flex items-start justify-between">
+        <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
             <div>
-                <h3 class="titre text-lg">{{ $evenement->intitule }}</h3>
-                <p class="mt-1 text-sm text-[var(--gris)]">
+                <p class="tableau-periode text-[var(--midsp-gris)]">
                     {{ $evenement->date_debut->format('d/m/Y') }}
                     @if (! $evenement->date_debut->isSameDay($evenement->date_fin))
                         &rarr; {{ $evenement->date_fin->format('d/m/Y') }}
                     @endif
                     @if ($evenement->lieu) &middot; {{ $evenement->lieu }} @endif
                 </p>
+                @if ($evenement->demandeur)
+                    <p class="mt-1 text-sm text-[var(--midsp-gris)]">
+                        Demandé par {{ $evenement->demandeur->nom }}
+                    </p>
+                @endif
                 @if ($evenement->description)
-                    <p class="mt-2 text-sm text-[var(--gris)]">{{ $evenement->description }}</p>
+                    <p class="mt-3 text-sm">{{ $evenement->description }}</p>
                 @endif
             </div>
-            <span class="badge badge-neutre">
-                {{ $evenement->statut->libelle() }}
-            </span>
+
+            @php
+                $etat = match ($evenement->statut->value) {
+                    'valide', 'termine' => 'ok',
+                    'en_cours'          => 'attente',
+                    default             => 'neutre',
+                };
+            @endphp
+            <x-ui.badge :etat="$etat" class="shrink-0">{{ $evenement->statut->libelle() }}</x-ui.badge>
         </div>
     </div>
 
     {{-- Couvertures --}}
-    <div>
-        <div class="mb-3 flex items-center justify-between">
-            <h4 class="titre text-lg">Couvertures</h4>
+    <section>
+        <div class="barre-outils">
+            <h2 class="titre text-lg">Couvertures</h2>
             @can('gerer-evenements')
-            <button wire:click="ouvrirCreationCouverture"
-                    class="btn btn-principal">
-                + Ajouter une couverture
-            </button>
+                <div class="barre-outils-actions">
+                    <x-ui.bouton variante="primaire" icone="plus" wire:click="ouvrirCreationCouverture">
+                        Ajouter une couverture
+                    </x-ui.bouton>
+                </div>
             @endcan
         </div>
 
         <div class="space-y-3">
             @forelse ($couvertures as $couverture)
-                <div wire:key="couv-{{ $couverture->id }}"
-                     class="carte p-4">
-                    <div class="flex items-start justify-between">
+                <div wire:key="couv-{{ $couverture->id }}" class="carte p-4">
+                    <div class="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
                         <div>
-                            <div class="font-medium">
-                                {{ $couverture->date->format('d/m/Y') }}
+                            <div class="tableau-titre tableau-periode">
+                                {{ $couverture->date->translatedFormat('l j F Y') }}
                             </div>
-                            <div class="mt-1 text-sm text-[var(--gris)]">
+                            <div class="mt-1 text-sm text-[var(--midsp-gris)]">
                                 @if ($couverture->heure_depart)
-                                    Depart {{ substr($couverture->heure_depart, 0, 5) }}
+                                    Départ {{ substr($couverture->heure_depart, 0, 5) }}
                                     @if ($couverture->lieu_depart) &mdash; {{ $couverture->lieu_depart }} @endif
                                 @endif
                                 @if ($couverture->heure_retour)
                                     &middot; Retour {{ substr($couverture->heure_retour, 0, 5) }}
                                     @if ($couverture->lieu_retour) &mdash; {{ $couverture->lieu_retour }} @endif
                                 @endif
+                                @if (! $couverture->heure_depart && ! $couverture->heure_retour)
+                                    Horaires non précisés
+                                @endif
                             </div>
                         </div>
-                       @can('gerer-evenements')
-                        <div class="flex shrink-0 gap-4 text-sm">
-                            <button wire:click="ouvrirEquipe({{ $couverture->id }})"
-                                    class="lien-action">Equipe</button>
-                            <button wire:click="ouvrirEditionCouverture({{ $couverture->id }})"
-                                    class="lien-action">Modifier</button>
-                            <button wire:click="confirmerSuppressionCouverture({{ $couverture->id }})"
-                                    class="lien-alerte">Supprimer</button>
-                        </div>
-                    @endcan
+
+                        @can('gerer-evenements')
+                            <div class="flex shrink-0 -mr-2">
+                                <x-ui.action icone="personnes" libelle="Équipe" wire:click="ouvrirEquipe({{ $couverture->id }})" texte />
+                                <x-ui.action icone="crayon" libelle="Modifier" wire:click="ouvrirEditionCouverture({{ $couverture->id }})" />
+                                <x-ui.action icone="corbeille" libelle="Supprimer" wire:click="confirmerSuppressionCouverture({{ $couverture->id }})" danger />
+                            </div>
+                        @endcan
                     </div>
 
-                    {{-- Equipe mobilisee --}}
-                    <div class="mt-3 border-t border-[var(--trait)] pt-3">
+                    {{-- Équipe affectée --}}
+                    <div class="mt-3 border-t border-[var(--midsp-gris-filet)] pt-3">
                         @if ($couverture->agents->isEmpty())
-                            <p class="text-sm italic text-[var(--gris)]">Aucun agent affecte.</p>
+                            <x-ui.badge etat="alerte">Aucun agent affecté</x-ui.badge>
                         @else
-                            <div class="flex flex-wrap gap-2">
+                            <div class="badges">
                                 @foreach ($couverture->agents as $agent)
-                                    <span class="badge badge-ok">
-                                        {{ $agent->nom }} {{ $agent->prenom }}
-                                    </span>
+                                    <x-ui.badge etat="ok">{{ $agent->nom }} {{ $agent->prenom }}</x-ui.badge>
                                 @endforeach
                             </div>
                         @endif
                     </div>
                 </div>
             @empty
-                <div class="carte border-dashed p-10 text-center text-sm text-[var(--gris)]">
-                    Aucune couverture pour cet evenement.
+                <div class="carte">
+                    <x-ui.vide>
+                        <p>Aucune couverture pour cet événement.</p>
+                        @can('gerer-evenements')
+                            <x-ui.bouton variante="secondaire" icone="plus" wire:click="ouvrirCreationCouverture">
+                                Planifier la première couverture
+                            </x-ui.bouton>
+                        @endcan
+                    </x-ui.vide>
                 </div>
             @endforelse
         </div>
-    </div>
+    </section>
 
-    {{-- Modale couverture --}}
+    {{-- Création / modification d'une couverture --}}
     @if ($modaleCouverture)
-        <div class="voile">
-            <div class="modale max-w-lg">
-                <h3 class="titre mb-5 text-lg">
-                    {{ $couvertureId ? 'Modifier la couverture' : 'Nouvelle couverture' }}
-                </h3>
+        <x-ui.modale :titre="$couvertureId ? 'Modifier la couverture' : 'Nouvelle couverture'"
+                     fermer="$set('modaleCouverture', false)">
 
-                <div class="space-y-4">
-                    <div>
-                        <label class="libelle">Date</label>
-                        <input type="date" wire:model="date"
-                               class="champ mt-1">
-                        @error('date') <span class="erreur">{{ $message }}</span> @enderror
-                    </div>
+            <x-ui.champ libelle="Date" type="date" wire:model="date" :erreur="$errors->first('date')" required />
 
-                    <div class="grid grid-cols-2 gap-4">
-                        <div>
-                            <label class="libelle">Heure de depart</label>
-                            <input type="time" wire:model="heure_depart"
-                                   class="champ mt-1">
-                        </div>
-                        <div>
-                            <label class="libelle">Lieu de depart</label>
-                            <input type="text" wire:model="lieu_depart"
-                                   class="champ mt-1">
-                        </div>
-                    </div>
-
-                    <div class="grid grid-cols-2 gap-4">
-                        <div>
-                            <label class="libelle">Heure de retour</label>
-                            <input type="time" wire:model="heure_retour"
-                                   class="champ mt-1">
-                        </div>
-                        <div>
-                            <label class="libelle">Lieu de retour</label>
-                            <input type="text" wire:model="lieu_retour"
-                                   class="champ mt-1">
-                        </div>
-                    </div>
-
-                    <div>
-                        <label class="libelle">Observation</label>
-                        <textarea wire:model="observation" rows="2"
-                                  class="champ mt-1"></textarea>
-                    </div>
-                </div>
-
-                <div class="mt-6 flex justify-end gap-3">
-                    <button wire:click="$set('modaleCouverture', false)"
-                            class="btn btn-secondaire">
-                        Annuler
-                    </button>
-                    <button wire:click="enregistrerCouverture"
-                            class="btn btn-principal">
-                        Enregistrer
-                    </button>
-                </div>
+            <div class="grille-2 mt-4">
+                <x-ui.champ libelle="Heure de départ" type="time" wire:model="heure_depart" />
+                <x-ui.champ libelle="Lieu de départ" wire:model="lieu_depart" />
             </div>
-        </div>
+
+            <div class="grille-2 mt-4">
+                <x-ui.champ libelle="Heure de retour" type="time" wire:model="heure_retour" />
+                <x-ui.champ libelle="Lieu de retour" wire:model="lieu_retour" />
+            </div>
+
+            <div class="mt-4">
+                <x-ui.champ libelle="Observation" type="textarea" rows="2" wire:model="observation" />
+            </div>
+
+            <x-slot:pied>
+                <x-ui.bouton variante="secondaire" wire:click="$set('modaleCouverture', false)">Annuler</x-ui.bouton>
+                <x-ui.bouton variante="primaire" wire:click="enregistrerCouverture" wire:loading.attr="disabled">Enregistrer</x-ui.bouton>
+            </x-slot:pied>
+        </x-ui.modale>
     @endif
 
-    {{-- Affectation d'equipe --}}
+    {{-- Équipe d'une couverture --}}
     @if ($couvertureEquipeId && $couvertureEnCours)
-        <div class="voile">
-            <div class="modale max-w-lg">
-                <h3 class="titre text-lg">
-                    Equipe du {{ $couvertureEnCours->date->format('d/m/Y') }}
-                </h3>
-                <p class="mt-1 text-sm text-[var(--gris)]">
-                    Seuls les agents disponibles ce jour-la sont proposes :
-                    les agents en absence validee ou deja mobilises sur une autre
-                    couverture n'apparaissent pas.
-                </p>
+        <x-ui.modale :titre="'Équipe du ' . $couvertureEnCours->date->format('d/m/Y')"
+                     sous-titre="Seuls les agents disponibles ce jour-là sont proposés : les agents en absence validée ou déjà mobilisés sur une autre couverture n'apparaissent pas."
+                     fermer="$set('couvertureEquipeId', null)">
 
-                <div class="mt-4 max-h-72 space-y-1 overflow-y-auto rounded-md border border-[var(--trait)] p-2">
-                    @forelse ($agentsDisponibles as $agent)
-                        <label wire:key="dispo-{{ $agent->id }}"
-                               class="flex items-center gap-3 rounded px-2 py-1.5 transition hover:bg-[var(--fond)]">
-                            <input type="checkbox" wire:model="agentsSelectionnes"
-                                   value="{{ $agent->id }}" class="rounded border-[var(--trait)] text-[var(--vert)] focus:ring-[var(--vert)]">
-                            <span class="text-sm">{{ $agent->nom }} {{ $agent->prenom }}</span>
-                            <span class="ms-auto text-xs text-[var(--gris)]">{{ $agent->fonction->libelle }}</span>
-                        </label>
-                    @empty
-                        <p class="px-2 py-5 text-center text-sm text-[var(--gris)]">
-                            Aucun agent disponible a cette date.
-                        </p>
-                    @endforelse
-                </div>
-
-                <div class="mt-6 flex justify-end gap-3">
-                    <button wire:click="$set('couvertureEquipeId', null)"
-                            class="btn btn-secondaire">
-                        Annuler
-                    </button>
-                    <button wire:click="enregistrerEquipe"
-                            class="btn btn-principal">
-                        Enregistrer l'equipe
-                    </button>
-                </div>
+            <div class="encadre max-h-72 overflow-y-auto p-2">
+                @forelse ($agentsDisponibles as $agent)
+                    <label wire:key="dispo-{{ $agent->id }}"
+                           class="case-libelle w-full rounded px-2 transition hover:bg-[var(--midsp-or-sable-clair)]">
+                        <input type="checkbox" class="case" wire:model="agentsSelectionnes" value="{{ $agent->id }}">
+                        <span>{{ $agent->nom }} {{ $agent->prenom }}</span>
+                        <span class="ms-auto text-xs text-[var(--midsp-gris)]">{{ $agent->fonction->libelle }}</span>
+                    </label>
+                @empty
+                    <p class="px-2 py-5 text-center text-sm text-[var(--midsp-gris)]">
+                        Aucun agent disponible à cette date.
+                    </p>
+                @endforelse
             </div>
-        </div>
+
+            <x-slot:pied>
+                <x-ui.bouton variante="secondaire" wire:click="$set('couvertureEquipeId', null)">Annuler</x-ui.bouton>
+                <x-ui.bouton variante="primaire" wire:click="enregistrerEquipe" wire:loading.attr="disabled">Enregistrer l'équipe</x-ui.bouton>
+            </x-slot:pied>
+        </x-ui.modale>
     @endif
 
-    {{-- Confirmation suppression couverture --}}
+    {{-- Suppression d'une couverture --}}
     @if ($suppressionCouvertureId)
-        <div class="voile">
-            <div class="modale max-w-md">
-                <h3 class="titre text-lg">Supprimer cette couverture ?</h3>
-                <p class="mt-2 text-sm text-[var(--gris)]">
-                    Les affectations d'agents associees seront egalement supprimees.
-                </p>
-                <div class="mt-6 flex justify-end gap-3">
-                    <button wire:click="$set('suppressionCouvertureId', null)"
-                            class="btn btn-secondaire">
-                        Annuler
-                    </button>
-                    <button wire:click="supprimerCouverture"
-                            class="btn btn-alerte">
-                        Supprimer
-                    </button>
-                </div>
-            </div>
-        </div>
+        <x-ui.modale titre="Supprimer cette couverture ?" largeur="md" fermer="$set('suppressionCouvertureId', null)">
+            <p class="text-sm text-[var(--midsp-gris)]">
+                Les affectations d'agents associées seront également supprimées.
+            </p>
+
+            <x-slot:pied>
+                <x-ui.bouton variante="secondaire" wire:click="$set('suppressionCouvertureId', null)">Annuler</x-ui.bouton>
+                <x-ui.bouton variante="danger" icone="corbeille" wire:click="supprimerCouverture">Supprimer</x-ui.bouton>
+            </x-slot:pied>
+        </x-ui.modale>
     @endif
 </div>

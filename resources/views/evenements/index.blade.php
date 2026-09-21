@@ -1,7 +1,9 @@
 <x-app-layout>
+    <x-slot name="titre">Événements</x-slot>
+
     <x-slot name="header">
-        <p class="eyebrow">Couverture des événements</p>
-        <h2 class="titre mt-1 text-2xl">Événements</h2>
+        <p class="bandeau-surtitre">Couverture des événements</p>
+        <h1 class="bandeau-titre">Événements</h1>
     </x-slot>
 
     <div class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">

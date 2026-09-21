@@ -8,219 +8,180 @@
         <div class="message-erreur">{{ session('erreur') }}</div>
     @endif
 
-    <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <select wire:model.live="filtreStatut" class="champ sm:w-auto">
-            <option value="">Tous les signalements</option>
-            @foreach ($statuts as $s)
-                <option value="{{ $s->value }}">{{ $s->libelle() }}</option>
-            @endforeach
-        </select>
+    <div class="barre-outils">
+        <div class="barre-outils-filtres">
+            <x-ui.selection wire:model.live="filtreStatut" libelle="Filtrer par statut">
+                <option value="">Tous les signalements</option>
+                @foreach ($statuts as $s)
+                    <option value="{{ $s->value }}">{{ $s->libelle() }}</option>
+                @endforeach
+            </x-ui.selection>
+
+            @if (method_exists($signalements, 'total'))
+                <span class="barre-outils-compte">
+                    {{ $signalements->total() }} {{ $signalements->total() > 1 ? 'signalements' : 'signalement' }}
+                </span>
+            @endif
+        </div>
 
         @can('gerer-materiel')
-            <button wire:click="ouvrirCreation" class="btn btn-principal">
-                + Nouveau signalement
-            </button>
+            <div class="barre-outils-actions">
+                <x-ui.bouton variante="primaire" icone="plus" wire:click="ouvrirCreation">
+                    Nouveau signalement
+                </x-ui.bouton>
+            </div>
         @endcan
     </div>
 
-    <div class="carte overflow-x-auto">
-        <table class="tableau min-w-full">
-            <thead>
-                <tr>
-                    <th>Référence</th>
-                    <th>Objet</th>
-                    <th>Nature</th>
-                    <th>Constat</th>
-                    <th>Statut</th>
-                    <th class="text-right">Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                @forelse ($signalements as $signalement)
-                    <tr wire:key="sig-{{ $signalement->id }}">
-                        <td class="font-medium">{{ $signalement->reference }}</td>
-                        <td>
-                            <div>{{ $signalement->objet() }}</div>
-                            @if ($signalement->agentResponsable)
-                                <div class="text-sm text-[var(--gris)]">
-                                    Détenteur : {{ $signalement->agentResponsable->nom }}
-                                </div>
-                            @endif
-                        </td>
-                        <td>{{ $signalement->type->libelle() }}</td>
-                        <td class="text-sm text-[var(--gris)]">
-                            {{ $signalement->date_constat->format('d/m/Y') }}<br>
-                            {{ $signalement->constatePar->nom }}
-                        </td>
-                        <td>
-                            <span @class([
-                                'badge',
-                                'badge-attente' => $signalement->statut->value === 'brouillon',
-                                'badge-ok'      => $signalement->statut->value === 'vise',
-                                'badge-neutre'  => $signalement->statut->value === 'classe',
-                            ])>
-                                {{ $signalement->statut->libelle() }}
-                            </span>
-                        </td>
-                        <td class="whitespace-nowrap text-right">
-                            <a href="{{ route('signalements.pdf', $signalement) }}" target="_blank"
-                               class="lien-action">PV</a>
+    <x-ui.tableau :colonnes="['Référence', 'Objet', 'Nature', 'Constat', 'Statut', 'Actions' => 'tableau-actions']">
+        @forelse ($signalements as $signalement)
+            <tr wire:key="sig-{{ $signalement->id }}">
+                <td class="tableau-titre tableau-periode">{{ $signalement->reference }}</td>
 
-                            @can('viser-signalement')
-                                @if ($signalement->statut->value === 'brouillon')
-                                    <button wire:click="ouvrirVisa({{ $signalement->id }})"
-                                            class="lien-action ms-4">Viser</button>
-                                @elseif ($signalement->statut->value === 'vise')
-                                    <button wire:click="ouvrirClassement({{ $signalement->id }})"
-                                            class="lien-action ms-4">Classer</button>
-                                @endif
-                            @endcan
-                        </td>
-                    </tr>
-                @empty
-                    <tr>
-                        <td colspan="6" class="py-10 text-center text-[var(--gris)]">
-                            Aucun signalement enregistré.
-                        </td>
-                    </tr>
-                @endforelse
-            </tbody>
-        </table>
-    </div>
-
-    <div>{{ $signalements->links() }}</div>
-
-    {{-- Modale de creation --}}
-    @if ($modaleOuverte)
-        <div class="voile">
-            <div class="modale max-w-lg">
-                <h3 class="titre mb-1 text-lg">Nouveau signalement</h3>
-                <p class="mb-5 text-sm text-[var(--gris)]">
-                    Le procès-verbal ne prend effet qu'après visa du Directeur.
-                </p>
-
-                <div class="space-y-4">
-                    <div class="grid grid-cols-2 gap-4">
-                        <div>
-                            <label class="libelle">Nature</label>
-                            <select wire:model="type" class="champ mt-1">
-                                @foreach ($types as $t)
-                                    <option value="{{ $t->value }}">{{ $t->libelle() }}</option>
-                                @endforeach
-                            </select>
-                        </div>
-                        <div>
-                            <label class="libelle">Date du constat</label>
-                            <input type="date" wire:model="date_constat" class="champ mt-1">
-                            @error('date_constat') <span class="erreur">{{ $message }}</span> @enderror
-                        </div>
-                    </div>
-
-                    <div>
-                        <label class="libelle">Matériel</label>
-                        <select wire:model.live="materiel_id" class="champ mt-1">
-                            <option value="">&mdash; Choisir &mdash;</option>
-                            @foreach ($materiels as $m)
-                                <option value="{{ $m->id }}">
-                                    {{ $m->designation }}@if ($m->marque) — {{ $m->marque }} {{ $m->modele }}@endif
-                                </option>
-                            @endforeach
-                        </select>
-                        @error('materiel_id') <span class="erreur">{{ $message }}</span> @enderror
-                    </div>
-
-                    @if ($accessoires->isNotEmpty())
-                        <div>
-                            <label class="libelle">Accessoire concerné</label>
-                            <select wire:model="accessoire_id" class="champ mt-1">
-                                <option value="">Le matériel lui-même</option>
-                                @foreach ($accessoires as $a)
-                                    <option value="{{ $a->id }}">{{ $a->libelle }}</option>
-                                @endforeach
-                            </select>
-                            <p class="mt-1 text-xs text-[var(--gris)]">
-                                Laissez vide si c'est le matériel entier qui est concerné.
-                            </p>
-                        </div>
+                <td>
+                    {{ $signalement->objet() }}
+                    @if ($signalement->agentResponsable)
+                        <span class="tableau-secondaire">Détenteur : {{ $signalement->agentResponsable->nom }}</span>
                     @endif
+                </td>
 
-                    <div class="grid grid-cols-2 gap-4">
-                        <div>
-                            <label class="libelle">Quantité</label>
-                            <input type="number" min="1" wire:model="quantite" class="champ mt-1">
-                            @error('quantite') <span class="erreur">{{ $message }}</span> @enderror
-                        </div>
-                        <div>
-                            <label class="libelle">Agent détenteur</label>
-                            <select wire:model="agent_responsable_id" class="champ mt-1">
-                                <option value="">&mdash; Non déterminé &mdash;</option>
-                                @foreach ($agents as $a)
-                                    <option value="{{ $a->id }}">{{ $a->nom }} {{ $a->prenom }}</option>
-                                @endforeach
-                            </select>
-                        </div>
-                    </div>
+                <td>{{ $signalement->type->libelle() }}</td>
 
-                    <div>
-                        <label class="libelle">Circonstances</label>
-                        <textarea wire:model="circonstances" rows="4" class="champ mt-1"
-                                  placeholder="Décrire les faits : date, lieu, contexte, personnes présentes."></textarea>
-                        @error('circonstances') <span class="erreur">{{ $message }}</span> @enderror
-                    </div>
+                <td class="tableau-periode">
+                    {{ $signalement->date_constat->format('d/m/Y') }}
+                    <span class="tableau-secondaire">{{ $signalement->constatePar->nom }}</span>
+                </td>
+
+                <td>
+                    @php
+                        $etat = match ($signalement->statut->value) {
+                            'brouillon' => 'attente',
+                            'vise'      => 'ok',
+                            default     => 'neutre',
+                        };
+                    @endphp
+                    <x-ui.badge :etat="$etat">{{ $signalement->statut->libelle() }}</x-ui.badge>
+                </td>
+
+                <td class="tableau-actions">
+                    <x-ui.action icone="document" libelle="Procès-verbal"
+                                 href="{{ route('signalements.pdf', $signalement) }}" target="_blank" rel="noopener" texte />
+
+                    @can('viser-signalement')
+                        @if ($signalement->statut->value === 'brouillon')
+                            <x-ui.action icone="tampon" libelle="Viser" wire:click="ouvrirVisa({{ $signalement->id }})" texte />
+                        @elseif ($signalement->statut->value === 'vise')
+                            <x-ui.action icone="boite" libelle="Classer" wire:click="ouvrirClassement({{ $signalement->id }})" texte />
+                        @endif
+                    @endcan
+                </td>
+            </tr>
+        @empty
+            <x-ui.vide colspan="6">
+                <p>Aucun signalement enregistré.</p>
+            </x-ui.vide>
+        @endforelse
+    </x-ui.tableau>
+
+    {{ $signalements->links('pagination.midsp') }}
+
+    {{-- Nouveau signalement --}}
+    @if ($modaleOuverte)
+        <x-ui.modale titre="Nouveau signalement"
+                     sous-titre="Le procès-verbal ne prend effet qu'après visa du Directeur."
+                     fermer="$set('modaleOuverte', false)">
+
+            <div class="grille-2">
+                <div class="champ-bloc">
+                    <label for="signalement-type" class="libelle">Nature</label>
+                    <x-ui.selection id="signalement-type" wire:model="type">
+                        @foreach ($types as $t)
+                            <option value="{{ $t->value }}">{{ $t->libelle() }}</option>
+                        @endforeach
+                    </x-ui.selection>
                 </div>
 
-                <div class="mt-6 flex justify-end gap-3">
-                    <button wire:click="$set('modaleOuverte', false)" class="btn btn-secondaire">
-                        Annuler
-                    </button>
-                    <button wire:click="enregistrer" class="btn btn-principal">
-                        Établir le procès-verbal
-                    </button>
+                <x-ui.champ libelle="Date du constat" type="date" wire:model="date_constat" :erreur="$errors->first('date_constat')" required />
+            </div>
+
+            <div class="champ-bloc mt-4">
+                <label for="signalement-materiel" class="libelle">Matériel <span aria-hidden="true">*</span></label>
+                <x-ui.selection id="signalement-materiel" wire:model.live="materiel_id" :class="$errors->has('materiel_id') ? 'champ-erreur' : ''">
+                    <option value="">— Choisir —</option>
+                    @foreach ($materiels as $m)
+                        <option value="{{ $m->id }}">
+                            {{ $m->designation }}@if ($m->marque) — {{ $m->marque }} {{ $m->modele }}@endif
+                        </option>
+                    @endforeach
+                </x-ui.selection>
+                @error('materiel_id') <p class="champ-message">{{ $message }}</p> @enderror
+            </div>
+
+            @if ($accessoires->isNotEmpty())
+                <div class="champ-bloc mt-4">
+                    <label for="signalement-accessoire" class="libelle">Accessoire concerné</label>
+                    <x-ui.selection id="signalement-accessoire" wire:model="accessoire_id">
+                        <option value="">Le matériel lui-même</option>
+                        @foreach ($accessoires as $a)
+                            <option value="{{ $a->id }}">{{ $a->libelle }}</option>
+                        @endforeach
+                    </x-ui.selection>
+                    <p class="champ-aide">Laissez vide si c'est le matériel entier qui est concerné.</p>
+                </div>
+            @endif
+
+            <div class="grille-2 mt-4">
+                <x-ui.champ libelle="Quantité" type="number" min="1" wire:model="quantite" :erreur="$errors->first('quantite')" required />
+
+                <div class="champ-bloc">
+                    <label for="signalement-agent" class="libelle">Agent détenteur</label>
+                    <x-ui.selection id="signalement-agent" wire:model="agent_responsable_id">
+                        <option value="">— Non déterminé —</option>
+                        @foreach ($agents as $a)
+                            <option value="{{ $a->id }}">{{ $a->nom }} {{ $a->prenom }}</option>
+                        @endforeach
+                    </x-ui.selection>
                 </div>
             </div>
-        </div>
+
+            <div class="mt-4">
+                <x-ui.champ libelle="Circonstances" type="textarea" rows="4" wire:model="circonstances"
+                            placeholder="Décrire les faits : date, lieu, contexte, personnes présentes."
+                            :erreur="$errors->first('circonstances')" required />
+            </div>
+
+            <x-slot:pied>
+                <x-ui.bouton variante="secondaire" wire:click="$set('modaleOuverte', false)">Annuler</x-ui.bouton>
+                <x-ui.bouton variante="primaire" wire:click="enregistrer" wire:loading.attr="disabled">Établir le procès-verbal</x-ui.bouton>
+            </x-slot:pied>
+        </x-ui.modale>
     @endif
 
-    {{-- Modale de visa --}}
+    {{-- Visa --}}
     @if ($visaId)
-        <div class="voile">
-            <div class="modale max-w-md">
-                <h3 class="titre text-lg">Viser le procès-verbal</h3>
-                <p class="mt-2 text-sm text-[var(--gris)]">
-                    Votre visa rend ce document opposable. Il ne pourra plus être modifié.
-                </p>
+        <x-ui.modale titre="Viser le procès-verbal"
+                     sous-titre="Votre visa rend ce document opposable. Il ne pourra plus être modifié."
+                     largeur="md" fermer="$set('visaId', null)">
+            <x-ui.champ libelle="Observation (facultative)" type="textarea" rows="3" wire:model="observation_visa" />
 
-                <div class="mt-4">
-                    <label class="libelle">Observation (facultative)</label>
-                    <textarea wire:model="observation_visa" rows="3" class="champ mt-1"></textarea>
-                </div>
-
-                <div class="mt-6 flex justify-end gap-3">
-                    <button wire:click="$set('visaId', null)" class="btn btn-secondaire">Annuler</button>
-                    <button wire:click="viser" class="btn btn-principal">Apposer le visa</button>
-                </div>
-            </div>
-        </div>
+            <x-slot:pied>
+                <x-ui.bouton variante="secondaire" wire:click="$set('visaId', null)">Annuler</x-ui.bouton>
+                <x-ui.bouton variante="primaire" icone="tampon" wire:click="viser">Apposer le visa</x-ui.bouton>
+            </x-slot:pied>
+        </x-ui.modale>
     @endif
 
-    {{-- Modale de classement --}}
+    {{-- Classement --}}
     @if ($classementId)
-        <div class="voile">
-            <div class="modale max-w-md">
-                <h3 class="titre text-lg">Classer le signalement</h3>
+        <x-ui.modale titre="Classer le signalement" largeur="md" fermer="$set('classementId', null)">
+            <x-ui.champ libelle="Suite donnée" type="textarea" rows="3" wire:model="suite_donnee"
+                        placeholder="Remplacement, retenue, classement sans suite…"
+                        :erreur="$errors->first('suite_donnee')" required />
 
-                <div class="mt-4">
-                    <label class="libelle">Suite donnée</label>
-                    <textarea wire:model="suite_donnee" rows="3" class="champ mt-1"
-                              placeholder="Remplacement, retenue, classement sans suite..."></textarea>
-                    @error('suite_donnee') <span class="erreur">{{ $message }}</span> @enderror
-                </div>
-
-                <div class="mt-6 flex justify-end gap-3">
-                    <button wire:click="$set('classementId', null)" class="btn btn-secondaire">Annuler</button>
-                    <button wire:click="classer" class="btn btn-principal">Classer</button>
-                </div>
-            </div>
-        </div>
+            <x-slot:pied>
+                <x-ui.bouton variante="secondaire" wire:click="$set('classementId', null)">Annuler</x-ui.bouton>
+                <x-ui.bouton variante="primaire" icone="boite" wire:click="classer">Classer</x-ui.bouton>
+            </x-slot:pied>
+        </x-ui.modale>
     @endif
 </div>

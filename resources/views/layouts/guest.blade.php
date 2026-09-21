@@ -16,8 +16,7 @@
     <body class="antialiased">
         <div class="flex min-h-screen flex-col items-center justify-center px-4 py-10">
 
-            {{-- Ici la place ne manque pas : version complete du logotype,
-                 220 px de large, bien au-dessus des 150 px exiges. --}}
+            
             <div class="mb-8 text-center">
                 <a href="/" class="inline-block">
                     <img src="{{ asset('img/midsp-logo-600.png') }}"

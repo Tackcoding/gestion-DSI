@@ -1,223 +1,179 @@
 <div class="space-y-4">
 
     @if (session('message'))
-        <div class="message">
-            {{ session('message') }}
-        </div>
+        <div class="message">{{ session('message') }}</div>
     @endif
 
     @if (session('erreur'))
-        <div class="message-erreur">
-            {{ session('erreur') }}
-        </div>
+        <div class="message-erreur">{{ session('erreur') }}</div>
     @endif
 
-    <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div class="flex flex-1 gap-2">
-            <input type="search" wire:model.live.debounce.300ms="recherche"
-                   placeholder="Intitule ou lieu..."
-                   class="champ sm:max-w-xs">
+    {{-- Barre d'outils : filtres à gauche, action principale à droite --}}
+    <div class="barre-outils">
+        <div class="barre-outils-filtres">
+            <x-ui.recherche wire:model.live.debounce.300ms="recherche"
+                            placeholder="Intitulé ou lieu…"
+                            libelle="Rechercher un événement" />
 
-            <select wire:model.live="filtreStatut" class="champ sm:w-auto">
+            <x-ui.selection wire:model.live="filtreStatut" libelle="Filtrer par statut">
                 <option value="">Tous les statuts</option>
                 @foreach ($statuts as $s)
                     <option value="{{ $s->value }}">{{ $s->libelle() }}</option>
                 @endforeach
-            </select>
+            </x-ui.selection>
+
+            @if (method_exists($evenements, 'total'))
+                <span class="barre-outils-compte">
+                    {{ $evenements->total() }} {{ $evenements->total() > 1 ? 'événements' : 'événement' }}
+                </span>
+            @endif
         </div>
 
-
         @can('gerer-evenements')
-        <button wire:click="ouvrirCreation"
-                class="btn btn-principal">
-            + Nouvel evenement
-        </button>
+            <div class="barre-outils-actions">
+                <x-ui.bouton variante="primaire" icone="plus" wire:click="ouvrirCreation">
+                    Nouvel événement
+                </x-ui.bouton>
+            </div>
         @endcan
     </div>
 
-    <div class="carte overflow-x-auto">
-        <table class="tableau min-w-full">
-            <thead>
-                <tr>
-                    <th >Evenement</th>
-                    <th >Periode</th>
-                    <th >Demandeur</th>
-                    <th class="text-center">Couv.</th>
-                    <th >Statut</th>
-                    <th class="text-right">Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                @forelse ($evenements as $evenement)
-                    <tr wire:key="evenement-{{ $evenement->id }}">
-                        <td >
-                            <div class="font-medium">{{ $evenement->intitule }}</div>
-                            @if ($evenement->lieu)
-                                <div class="text-sm text-[var(--gris)]">{{ $evenement->lieu }}</div>
-                            @endif
-                        </td>
-                        <td class="text-[var(--gris)]">
-                            {{ $evenement->date_debut->format('d/m/Y') }}
-                            @if (! $evenement->date_debut->isSameDay($evenement->date_fin))
-                                &rarr; {{ $evenement->date_fin->format('d/m/Y') }}
-                            @endif
-                        </td>
-                        <td class="text-[var(--gris)]">
-                            {{ $evenement->demandeur->nom }}
-                        </td>
-                        <td class="text-center text-[var(--gris)]">
-                            {{ $evenement->couvertures_count }}
-                        </td>
-                        <td >
-                            <span @class([
-                                    'badge',
-                                    'badge-neutre'  => in_array($evenement->statut->value, ['brouillon', 'annule']),
-                                    'badge-attente' => $evenement->statut->value === 'en_cours',
-                                    'badge-ok'      => in_array($evenement->statut->value, ['valide', 'termine']),
-                                ])>
-                                {{ $evenement->statut->libelle() }}
-                            </span>
-                        </td>
-
-
-
-                      <td class="whitespace-nowrap text-right">
-                            <a href="{{ route('evenements.detail', $evenement) }}" class="lien-action">
-                                Detail
-                            </a>
-
-                           @can('gerer-evenements')
-                                @if ($evenement->statut->value === 'brouillon')
-                                    <button wire:click="valider({{ $evenement->id }})"
-                                            class="lien-action ms-4">Valider</button>
-                                @endif
-                                <button wire:click="ouvrirEdition({{ $evenement->id }})"
-                                        class="lien-action ms-4">Modifier</button>
-                                <button wire:click="confirmerSuppression({{ $evenement->id }})"
-                                        class="lien-alerte ms-4">Supprimer</button>
-                            @endcan
-                        </td>
-
-
-
-                    </tr>
-                @empty
-                    <tr>
-                        <td colspan="6" class="py-10 text-center text-[var(--gris)]">
-                            Aucun evenement.
-                        </td>
-                    </tr>
-                @endforelse
-            </tbody>
-        </table>
-    </div>
-
-    <div>{{ $evenements->links() }}</div>
-
-    @if ($modaleOuverte)
-        <div class="voile">
-            <div class="modale max-w-lg">
-                <h3 class="titre mb-5 text-lg">
-                    {{ $evenementId ? 'Modifier l\'evenement' : 'Nouvel evenement' }}
-                </h3>
-
-                <div class="space-y-4">
-                    <div>
-                        <label class="libelle">Intitule</label>
-                        <input type="text" wire:model="intitule"
-                               class="champ mt-1">
-                        @error('intitule') <span class="erreur">{{ $message }}</span> @enderror
-                    </div>
-
-                    <div>
-                        <label class="libelle">Lieu</label>
-                        <input type="text" wire:model="lieu"
-                               class="champ mt-1">
-                    </div>
-
-                    <div class="grid grid-cols-2 gap-4">
-                        <div>
-                            <label class="libelle">Date de debut</label>
-                            <input type="date" wire:model="date_debut"
-                                   class="champ mt-1">
-                            @error('date_debut') <span class="erreur">{{ $message }}</span> @enderror
-                        </div>
-                        <div>
-                            <label class="libelle">Date de fin</label>
-                            <input type="date" wire:model="date_fin"
-                                   class="champ mt-1">
-                            @error('date_fin') <span class="erreur">{{ $message }}</span> @enderror
-                        </div>
-                    </div>
-
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <label class="libelle">Demandeur</label>
-                        <select wire:model="demandeur_id" class="champ mt-1">
-                            <option value="">&mdash; Choisir &mdash;</option>
-                            @foreach ($agents as $a)
-                                <option value="{{ $a->id }}">{{ $a->nom }} {{ $a->prenom }}</option>
-                            @endforeach
-                        </select>
-                        @error('demandeur_id') <span class="erreur">{{ $message }}</span> @enderror
-                    </div>
-
-                    {{-- Le statut ne se choisit qu'en modification : a la creation,
-                        l'evenement demarre toujours en brouillon et se valide ensuite. --}}
-                    @if ($evenementId)
-                        <div>
-                            <label class="libelle">Statut</label>
-                            <select wire:model="statut" class="champ mt-1">
-                                @foreach ($statuts as $s)
-                                    <option value="{{ $s->value }}">{{ $s->libelle() }}</option>
-                                @endforeach
-                            </select>
-                        </div>
-                    @else
-                        <div class="flex items-end pb-2 text-sm text-[var(--gris)]">
-                            L'événement sera créé en brouillon.
-                        </div>
+    {{-- Liste --}}
+    <x-ui.tableau :colonnes="['Événement', 'Période', 'Demandeur', 'Couvertures' => 'tableau-nombre', 'Statut', 'Actions' => 'tableau-actions']">
+        @forelse ($evenements as $evenement)
+            <tr wire:key="evenement-{{ $evenement->id }}">
+                <td>
+                    <a href="{{ route('evenements.detail', $evenement) }}" class="tableau-titre">
+                        {{ $evenement->intitule }}
+                    </a>
+                    @if ($evenement->lieu)
+                        <span class="tableau-secondaire">{{ $evenement->lieu }}</span>
                     @endif
-                </div>
-                    <div>
-                        <label class="libelle">Description</label>
-                        <textarea wire:model="description" rows="3"
-                                  class="champ mt-1"></textarea>
-                    </div>
+                </td>
+
+                <td class="tableau-periode">
+                    {{ $evenement->date_debut->format('d/m/Y') }}
+                    @if (! $evenement->date_debut->isSameDay($evenement->date_fin))
+                        &rarr; {{ $evenement->date_fin->format('d/m/Y') }}
+                    @endif
+                </td>
+
+                <td>{{ $evenement->demandeur->nom }}</td>
+
+                {{-- Un événement validé ou en cours sans aucune couverture est une alerte, pas un zéro --}}
+                <td class="tableau-nombre">
+                    @if ($evenement->couvertures_count > 0)
+                        {{ $evenement->couvertures_count }}
+                    @elseif (in_array($evenement->statut->value, ['valide', 'en_cours']))
+                        <x-ui.badge etat="alerte">Aucune</x-ui.badge>
+                    @else
+                        <span class="text-[var(--midsp-gris-acier)]">—</span>
+                    @endif
+                </td>
+
+                <td>
+                    @php
+                        $etat = match ($evenement->statut->value) {
+                            'valide', 'termine' => 'ok',
+                            'en_cours'          => 'attente',
+                            default             => 'neutre',
+                        };
+                    @endphp
+                    <x-ui.badge :etat="$etat">{{ $evenement->statut->libelle() }}</x-ui.badge>
+                </td>
+
+                <td class="tableau-actions">
+                    <x-ui.action icone="oeil" libelle="Détail" href="{{ route('evenements.detail', $evenement) }}" />
+
+                    @can('gerer-evenements')
+                        @if ($evenement->statut->value === 'brouillon')
+                            <x-ui.action icone="coche" libelle="Valider" wire:click="valider({{ $evenement->id }})" texte />
+                        @endif
+                        <x-ui.action icone="crayon" libelle="Modifier" wire:click="ouvrirEdition({{ $evenement->id }})" />
+                        <x-ui.action icone="corbeille" libelle="Supprimer" wire:click="confirmerSuppression({{ $evenement->id }})" danger />
+                    @endcan
+                </td>
+            </tr>
+        @empty
+            <x-ui.vide colspan="6">
+                @if ($recherche || $filtreStatut)
+                    <p>Aucun événement ne correspond à votre recherche.</p>
+                @else
+                    <p>Aucun événement enregistré pour le moment.</p>
+                    @can('gerer-evenements')
+                        <x-ui.bouton variante="secondaire" icone="plus" wire:click="ouvrirCreation">
+                            Créer le premier événement
+                        </x-ui.bouton>
+                    @endcan
+                @endif
+            </x-ui.vide>
+        @endforelse
+    </x-ui.tableau>
+
+    {{ $evenements->links('pagination.midsp') }}
+
+    {{-- Création / modification --}}
+    @if ($modaleOuverte)
+        <x-ui.modale :titre="$evenementId ? 'Modifier l\'événement' : 'Nouvel événement'"
+                     fermer="$set('modaleOuverte', false)">
+
+            <x-ui.champ libelle="Intitulé" wire:model="intitule" :erreur="$errors->first('intitule')" required />
+
+            <x-ui.champ libelle="Lieu" wire:model="lieu" aide="Ville, quartier ou salle" />
+
+            <div class="grille-2 mt-4">
+                <x-ui.champ libelle="Date de début" type="date" wire:model="date_debut" :erreur="$errors->first('date_debut')" required />
+                <x-ui.champ libelle="Date de fin" type="date" wire:model="date_fin" :erreur="$errors->first('date_fin')" required />
+            </div>
+
+            <div class="grille-2 mt-4">
+                <div class="champ-bloc">
+                    <label for="evenement-demandeur" class="libelle">Demandeur <span aria-hidden="true">*</span></label>
+                    <x-ui.selection id="evenement-demandeur" wire:model="demandeur_id" :class="$errors->has('demandeur_id') ? 'champ-erreur' : ''">
+                        <option value="">— Choisir —</option>
+                        @foreach ($agents as $a)
+                            <option value="{{ $a->id }}">{{ $a->nom }} {{ $a->prenom }}</option>
+                        @endforeach
+                    </x-ui.selection>
+                    @error('demandeur_id') <p class="champ-message">{{ $message }}</p> @enderror
                 </div>
 
-                <div class="mt-6 flex justify-end gap-3">
-                    <button wire:click="$set('modaleOuverte', false)"
-                            class="btn btn-secondaire">
-                        Annuler
-                    </button>
-                    <button wire:click="enregistrer"
-                            class="btn btn-principal">
-                        Enregistrer
-                    </button>
-                </div>
+                @if ($evenementId)
+                    <div class="champ-bloc">
+                        <label for="evenement-statut" class="libelle">Statut</label>
+                        <x-ui.selection id="evenement-statut" wire:model="statut">
+                            @foreach ($statuts as $s)
+                                <option value="{{ $s->value }}">{{ $s->libelle() }}</option>
+                            @endforeach
+                        </x-ui.selection>
+                    </div>
+                @else
+                    <p class="champ-aide self-end pb-3">L'événement sera créé en brouillon.</p>
+                @endif
             </div>
-        </div>
+
+            <div class="mt-4">
+                <x-ui.champ libelle="Description" type="textarea" rows="3" wire:model="description" />
+            </div>
+
+            <x-slot:pied>
+                <x-ui.bouton variante="secondaire" wire:click="$set('modaleOuverte', false)">Annuler</x-ui.bouton>
+                <x-ui.bouton variante="primaire" wire:click="enregistrer" wire:loading.attr="disabled">Enregistrer</x-ui.bouton>
+            </x-slot:pied>
+        </x-ui.modale>
     @endif
 
+    {{-- Confirmation de suppression --}}
     @if ($suppressionId)
-        <div class="voile">
-            <div class="modale max-w-md">
-                <h3 class="titre text-lg">Confirmer la suppression</h3>
-                <p class="mt-2 text-sm text-[var(--gris)]">
-                    L'evenement sera retire des listes. Suppression logique, reversible.
-                </p>
-                <div class="mt-6 flex justify-end gap-3">
-                    <button wire:click="$set('suppressionId', null)"
-                            class="btn btn-secondaire">
-                        Annuler
-                    </button>
-                    <button wire:click="supprimer"
-                            class="btn btn-alerte">
-                        Supprimer
-                    </button>
-                </div>
-            </div>
-        </div>
+        <x-ui.modale titre="Supprimer cet événement ?" largeur="md" fermer="$set('suppressionId', null)">
+            <p class="text-sm text-[var(--midsp-gris)]">
+                Il sera retiré des listes. La suppression est logique et réversible.
+            </p>
+
+            <x-slot:pied>
+                <x-ui.bouton variante="secondaire" wire:click="$set('suppressionId', null)">Annuler</x-ui.bouton>
+                <x-ui.bouton variante="danger" icone="corbeille" wire:click="supprimer">Supprimer</x-ui.bouton>
+            </x-slot:pied>
+        </x-ui.modale>
     @endif
 </div>

@@ -1,187 +1,135 @@
 <div class="space-y-4">
 
-    {{-- Messages flash --}}
     @if (session('message'))
-        <div class="message">
-            {{ session('message') }}
-        </div>
+        <div class="message">{{ session('message') }}</div>
     @endif
 
     @if (session('erreur'))
-        <div class="message-erreur">
-            {{ session('erreur') }}
-        </div>
+        <div class="message-erreur">{{ session('erreur') }}</div>
     @endif
 
-    {{-- Barre d'outils --}}
-    <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div class="flex flex-1 gap-2">
-            {{-- .live.debounce : filtre pendant la frappe, sans requete a chaque caractere --}}
-            <input
-                type="search"
-                wire:model.live.debounce.300ms="recherche"
-                placeholder="Rechercher un materiel..."
-                class="champ sm:max-w-xs"
-            >
+    <div class="barre-outils">
+        <div class="barre-outils-filtres">
+            <x-ui.recherche wire:model.live.debounce.300ms="recherche"
+                            placeholder="Désignation…"
+                            libelle="Rechercher un matériel" />
 
-            <select
-                wire:model.live="filtreEtat"
-                class="champ sm:w-auto"
-            >
-                <option value="">Tous les etats</option>
+            <x-ui.selection wire:model.live="filtreEtat" libelle="Filtrer par état">
+                <option value="">Tous les états</option>
                 @foreach ($etats as $e)
                     <option value="{{ $e->value }}">{{ $e->libelle() }}</option>
                 @endforeach
-            </select>
+            </x-ui.selection>
+
+            @if (method_exists($materiels, 'total'))
+                <span class="barre-outils-compte">
+                    {{ $materiels->total() }} {{ $materiels->total() > 1 ? 'références' : 'référence' }}
+                </span>
+            @endif
         </div>
 
-        <button
-            wire:click="ouvrirCreation"
-            class="btn btn-principal"
-        >
-            + Nouveau materiel
-        </button>
+        <div class="barre-outils-actions">
+            <x-ui.bouton variante="primaire" icone="plus" wire:click="ouvrirCreation">
+                Nouveau matériel
+            </x-ui.bouton>
+        </div>
     </div>
 
-    {{-- Tableau --}}
-    <div class="carte overflow-x-auto">
-        <table class="tableau min-w-full">
-            <thead>
-                <tr>
-                    <th >Designation</th>
-                    <th >Quantite</th>
-                    <th >Etat</th>
-                    <th >Statut</th>
-                    <th class="text-right">Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                @forelse ($materiels as $materiel)
-                    <tr wire:key="materiel-{{ $materiel->id }}">
-                        <td >
-                            <div class="font-medium">{{ $materiel->designation }}</div>
-                            @if ($materiel->description)
-                                <div class="text-sm text-[var(--gris)]">{{ $materiel->description }}</div>
-                            @endif
-                        </td>
-                        <td class="text-[var(--gris)]">{{ $materiel->quantite_totale }}</td>
-                        <td >
-                            <span @class([
-                                    'badge',
-                                    'badge-ok'      => $materiel->etat->value === 'bon',
-                                    'badge-attente' => $materiel->etat->value === 'moyen',
-                                    'badge-alerte'  => $materiel->etat->value === 'hors_service',
-                                ])>
-                                {{ $materiel->etat->libelle() }}
-                            </span>
-                        </td>
-                        <td >
-                            {{ $materiel->actif ? 'Actif' : 'Inactif' }}
-                        </td>
-                        <td class="text-right whitespace-nowrap">
-                            <button wire:click="ouvrirEdition({{ $materiel->id }})"
-                                    class="lien-action">Modifier</button>
-                            <button wire:click="confirmerSuppression({{ $materiel->id }})"
-                                    class="lien-alerte ms-4">Supprimer</button>
-                        </td>
-                    </tr>
-                @empty
-                    <tr>
-                        <td colspan="5" class="py-10 text-center text-[var(--gris)]">
-                            Aucun materiel trouve.
-                        </td>
-                    </tr>
-                @endforelse
-            </tbody>
-        </table>
-    </div>
+    <x-ui.tableau :colonnes="['Désignation', 'Quantité' => 'tableau-nombre', 'État', 'Statut', 'Actions' => 'tableau-actions']">
+        @forelse ($materiels as $materiel)
+            <tr wire:key="materiel-{{ $materiel->id }}">
+                <td>
+                    <span class="tableau-titre">{{ $materiel->designation }}</span>
+                    @if ($materiel->description)
+                        <span class="tableau-secondaire">{{ $materiel->description }}</span>
+                    @endif
+                </td>
 
-    <div>{{ $materiels->links() }}</div>
+                <td class="tableau-nombre">{{ $materiel->quantite_totale }}</td>
 
-    {{-- Modale creation / edition --}}
+                <td>
+                    @php
+                        $etat = match ($materiel->etat->value) {
+                            'bon'          => 'ok',
+                            'moyen'        => 'attente',
+                            'hors_service' => 'alerte',
+                            default        => 'neutre',
+                        };
+                    @endphp
+                    <x-ui.badge :etat="$etat">{{ $materiel->etat->libelle() }}</x-ui.badge>
+                </td>
+
+                <td>
+                    <x-ui.badge :etat="$materiel->actif ? 'ok' : 'neutre'">
+                        {{ $materiel->actif ? 'Actif' : 'Inactif' }}
+                    </x-ui.badge>
+                </td>
+
+                <td class="tableau-actions">
+                    <x-ui.action icone="crayon" libelle="Modifier" wire:click="ouvrirEdition({{ $materiel->id }})" texte />
+                    <x-ui.action icone="corbeille" libelle="Supprimer" wire:click="confirmerSuppression({{ $materiel->id }})" danger />
+                </td>
+            </tr>
+        @empty
+            <x-ui.vide colspan="5">
+                @if ($recherche || $filtreEtat)
+                    <p>Aucun matériel ne correspond à votre recherche.</p>
+                @else
+                    <p>Aucun matériel enregistré pour le moment.</p>
+                    <x-ui.bouton variante="secondaire" icone="plus" wire:click="ouvrirCreation">
+                        Ajouter la première référence
+                    </x-ui.bouton>
+                @endif
+            </x-ui.vide>
+        @endforelse
+    </x-ui.tableau>
+
+    {{ $materiels->links('pagination.midsp') }}
+
+    {{-- Création / modification --}}
     @if ($modaleOuverte)
-        <div class="voile">
-            <div class="modale max-w-lg">
-                <h3 class="titre mb-5 text-lg">
-                    {{ $materielId ? 'Modifier le materiel' : 'Nouveau materiel' }}
-                </h3>
+        <x-ui.modale :titre="$materielId ? 'Modifier le matériel' : 'Nouveau matériel'"
+                     fermer="$set('modaleOuverte', false)">
 
-                <div class="space-y-4">
-                    <div>
-                        <label class="libelle">Designation</label>
-                        <input type="text" wire:model="designation"
-                               class="champ mt-1">
-                        @error('designation')
-                            <span class="erreur">{{ $message }}</span>
-                        @enderror
-                    </div>
+            <x-ui.champ libelle="Désignation" wire:model="designation" :erreur="$errors->first('designation')" required />
 
-                    <div>
-                        <label class="libelle">Description</label>
-                        <textarea wire:model="description" rows="2"
-                                  class="champ mt-1"></textarea>
-                    </div>
+            <x-ui.champ libelle="Description" type="textarea" rows="2" wire:model="description" />
 
-                    <div class="grid grid-cols-2 gap-4">
-                        <div>
-                            <label class="libelle">Quantite totale</label>
-                            <input type="number" min="1" wire:model="quantite_totale"
-                                   class="champ mt-1">
-                            @error('quantite_totale')
-                                <span class="erreur">{{ $message }}</span>
-                            @enderror
-                        </div>
+            <div class="grille-2 mt-4">
+                <x-ui.champ libelle="Quantité totale" type="number" min="1" wire:model="quantite_totale" :erreur="$errors->first('quantite_totale')" required />
 
-                        <div>
-                            <label class="libelle">Etat</label>
-                            <select wire:model="etat" class="champ mt-1">
-                                @foreach ($etats as $e)
-                                    <option value="{{ $e->value }}">{{ $e->libelle() }}</option>
-                                @endforeach
-                            </select>
-                        </div>
-                    </div>
-
-                    <label class="flex items-center gap-2">
-                        <input type="checkbox" wire:model="actif" class="rounded border-[var(--trait)] text-[var(--vert)] focus:ring-[var(--vert)]">
-                        <span class="text-sm text-[var(--gris)]">Materiel actif</span>
-                    </label>
-                </div>
-
-                <div class="mt-6 flex justify-end gap-3">
-                    <button wire:click="$set('modaleOuverte', false)"
-                            class="btn btn-secondaire">
-                        Annuler
-                    </button>
-                    <button wire:click="enregistrer"
-                            class="btn btn-principal">
-                        Enregistrer
-                    </button>
+                <div class="champ-bloc">
+                    <label for="materiel-etat" class="libelle">État</label>
+                    <x-ui.selection id="materiel-etat" wire:model="etat">
+                        @foreach ($etats as $e)
+                            <option value="{{ $e->value }}">{{ $e->libelle() }}</option>
+                        @endforeach
+                    </x-ui.selection>
                 </div>
             </div>
-        </div>
+
+            <div class="mt-2">
+                <x-ui.case wire:model="actif">Matériel actif</x-ui.case>
+            </div>
+
+            <x-slot:pied>
+                <x-ui.bouton variante="secondaire" wire:click="$set('modaleOuverte', false)">Annuler</x-ui.bouton>
+                <x-ui.bouton variante="primaire" wire:click="enregistrer" wire:loading.attr="disabled">Enregistrer</x-ui.bouton>
+            </x-slot:pied>
+        </x-ui.modale>
     @endif
 
     {{-- Confirmation de suppression --}}
     @if ($suppressionId)
-        <div class="voile">
-            <div class="modale max-w-md">
-                <h3 class="titre text-lg">Confirmer la suppression</h3>
-                <p class="mt-2 text-sm text-[var(--gris)]">
-                    Cette action est reversible (suppression logique), mais le materiel
-                    disparaitra des listes.
-                </p>
-                <div class="mt-6 flex justify-end gap-3">
-                    <button wire:click="$set('suppressionId', null)"
-                            class="btn btn-secondaire">
-                        Annuler
-                    </button>
-                    <button wire:click="supprimer"
-                            class="btn btn-alerte">
-                        Supprimer
-                    </button>
-                </div>
-            </div>
-        </div>
+        <x-ui.modale titre="Supprimer ce matériel ?" largeur="md" fermer="$set('suppressionId', null)">
+            <p class="text-sm text-[var(--midsp-gris)]">
+                Il disparaîtra des listes. La suppression est logique et réversible.
+            </p>
+
+            <x-slot:pied>
+                <x-ui.bouton variante="secondaire" wire:click="$set('suppressionId', null)">Annuler</x-ui.bouton>
+                <x-ui.bouton variante="danger" icone="corbeille" wire:click="supprimer">Supprimer</x-ui.bouton>
+            </x-slot:pied>
+        </x-ui.modale>
     @endif
 </div>

@@ -8,205 +8,164 @@
         <div class="message-erreur">{{ session('erreur') }}</div>
     @endif
 
-    {{-- Filtres : l'etat physique, pas le statut administratif --}}
-    <div class="flex flex-wrap gap-2">
-        <button wire:click="$set('filtre', 'a_sortir')"
-                @class(['btn', $filtre === 'a_sortir' ? 'btn-principal' : 'btn-secondaire'])>
+    {{-- Filtres : un seul actif à la fois --}}
+    <div class="segments" role="group" aria-label="Filtrer le registre">
+        <x-ui.bouton variante="secondaire" wire:click="$set('filtre', 'a_sortir')" :aria-pressed="$filtre === 'a_sortir' ? 'true' : 'false'">
             À sortir
-        </button>
-        <button wire:click="$set('filtre', 'en_circulation')"
-                @class(['btn', $filtre === 'en_circulation' ? 'btn-principal' : 'btn-secondaire'])>
+        </x-ui.bouton>
+        <x-ui.bouton variante="secondaire" wire:click="$set('filtre', 'en_circulation')" :aria-pressed="$filtre === 'en_circulation' ? 'true' : 'false'">
             En circulation
-        </button>
-        <button wire:click="$set('filtre', 'tout')"
-                @class(['btn', $filtre === 'tout' ? 'btn-principal' : 'btn-secondaire'])>
+        </x-ui.bouton>
+        <x-ui.bouton variante="secondaire" wire:click="$set('filtre', 'tout')" :aria-pressed="$filtre === 'tout' ? 'true' : 'false'">
             Tout
-        </button>
+        </x-ui.bouton>
     </div>
 
-    <div class="carte overflow-x-auto">
-        <table class="tableau min-w-full">
-            <thead>
-                <tr>
-                    <th>Matériel</th>
-                    <th>Événement</th>
-                    <th>Période</th>
-                    <th class="text-center">Réservé</th>
-                    <th class="text-center">Sorti</th>
-                    <th class="text-center">Rendu</th>
-                    <th class="text-right">Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                @forelse ($reservations as $reservation)
-                    @php
-                        $sorti      = $reservation->quantiteSortie();
-                        $rendu      = $reservation->quantiteRendue();
-                        $circulation = $sorti - $rendu;
-                    @endphp
+    <x-ui.tableau :colonnes="['Matériel', 'Événement', 'Période', 'Réservé' => 'tableau-nombre', 'Sorti' => 'tableau-nombre', 'Rendu', 'Actions' => 'tableau-actions']">
+        @forelse ($reservations as $reservation)
+            @php
+                $sorti       = $reservation->quantiteSortie();
+                $rendu       = $reservation->quantiteRendue();
+                $circulation = $sorti - $rendu;
+            @endphp
 
-                    <tr wire:key="reg-{{ $reservation->id }}">
-                        <td>
-                            <div class="font-medium">{{ $reservation->materiel->designation }}</div>
-                            @if ($reservation->materiel->marque)
-                                <div class="text-sm text-[var(--gris)]">
-                                    {{ $reservation->materiel->marque }} {{ $reservation->materiel->modele }}
-                                </div>
-                            @endif
-                            @if ($reservation->materiel->accessoires->isNotEmpty())
-                                <div class="mt-1 text-xs text-[var(--gris)]">
-                                    {{ $reservation->materiel->accessoires->count() }} accessoire(s)
-                                </div>
-                            @endif
-                        </td>
-                        <td class="text-sm">
-                            <a href="{{ route('evenements.detail', $reservation->evenement) }}"
-                               class="lien-action">
-                                {{ $reservation->evenement->intitule }}
-                            </a>
-                        </td>
-                        <td class="text-sm text-[var(--gris)]">
-                            {{ $reservation->date_debut->format('d/m/Y H:i') }}<br>
-                            {{ $reservation->date_fin->format('d/m/Y H:i') }}
-                        </td>
-                        <td class="text-center text-[var(--gris)]">{{ $reservation->quantite }}</td>
-                        <td class="text-center text-[var(--gris)]">{{ $sorti }}</td>
-                        <td class="text-center">
-                            @if ($circulation > 0)
-                                <span class="badge badge-attente">{{ $rendu }} / {{ $sorti }}</span>
-                            @elseif ($sorti > 0)
-                                <span class="badge badge-ok">Complet</span>
-                            @else
-                                <span class="text-[var(--gris)]">—</span>
-                            @endif
-                        </td>
-                        <td class="whitespace-nowrap text-right">
-                            @can('gerer-materiel')
-                                @if ($sorti < $reservation->quantite)
-                                    <button wire:click="ouvrirSortie({{ $reservation->id }})"
-                                            class="lien-action">Sortie</button>
-                                @endif
+            <tr wire:key="reg-{{ $reservation->id }}">
+                <td>
+                    <span class="tableau-titre">{{ $reservation->materiel->designation }}</span>
+                    @if ($reservation->materiel->marque)
+                        <span class="tableau-secondaire">
+                            {{ $reservation->materiel->marque }} {{ $reservation->materiel->modele }}
+                        </span>
+                    @endif
+                    @if ($reservation->materiel->accessoires->isNotEmpty())
+                        <span class="tableau-secondaire">
+                            {{ $reservation->materiel->accessoires->count() }} accessoire(s)
+                        </span>
+                    @endif
+                </td>
 
-                                @if ($circulation > 0)
-                                    <button wire:click="ouvrirRetour({{ $reservation->id }})"
-                                            class="lien-action ms-4">Retour</button>
-                                @endif
-                            @endcan
+                <td>
+                    <a href="{{ route('evenements.detail', $reservation->evenement) }}" class="lien text-sm">
+                        {{ $reservation->evenement->intitule }}
+                    </a>
+                </td>
 
-                            @if ($sorti === 0 && ! auth()->user()->can('gerer-materiel'))
-                                <span class="text-sm text-[var(--gris)]">Non sorti</span>
-                            @endif
-                        </td>
-                    </tr>
-                @empty
-                    <tr>
-                        <td colspan="7" class="py-10 text-center text-[var(--gris)]">
-                            Aucune réservation dans cette catégorie.
-                        </td>
-                    </tr>
-                @endforelse
-            </tbody>
-        </table>
-    </div>
+                <td class="tableau-periode text-sm">
+                    {{ $reservation->date_debut->format('d/m/Y H:i') }}<br>
+                    {{ $reservation->date_fin->format('d/m/Y H:i') }}
+                </td>
 
-    {{-- Modale sortie / retour --}}
+                <td class="tableau-nombre">{{ $reservation->quantite }}</td>
+                <td class="tableau-nombre">{{ $sorti }}</td>
+
+                <td>
+                    @if ($circulation > 0)
+                        <x-ui.badge etat="attente">{{ $rendu }} / {{ $sorti }} rendu(s)</x-ui.badge>
+                    @elseif ($sorti > 0)
+                        <x-ui.badge etat="ok">Complet</x-ui.badge>
+                    @else
+                        <span class="text-[var(--midsp-gris-acier)]">—</span>
+                    @endif
+                </td>
+
+                <td class="tableau-actions">
+                    @can('gerer-materiel')
+                        @if ($sorti < $reservation->quantite)
+                            <x-ui.action icone="sortie" libelle="Sortie" wire:click="ouvrirSortie({{ $reservation->id }})" texte />
+                        @endif
+
+                        @if ($circulation > 0)
+                            <x-ui.action icone="retour" libelle="Retour" wire:click="ouvrirRetour({{ $reservation->id }})" texte />
+                        @endif
+                    @else
+                        @if ($sorti === 0)
+                            <span class="text-sm text-[var(--midsp-gris)]">Non sorti</span>
+                        @endif
+                    @endcan
+                </td>
+            </tr>
+        @empty
+            <x-ui.vide colspan="7">
+                <p>Aucune réservation dans cette catégorie.</p>
+            </x-ui.vide>
+        @endforelse
+    </x-ui.tableau>
+
+    {{-- Sortie / retour --}}
     @if ($modaleOuverte && $reservationCourante)
-        <div class="voile">
-            <div class="modale max-w-lg">
-                <h3 class="titre mb-1 text-lg">
-                    {{ $typeMouvement === 'sortie' ? 'Sortie de matériel' : 'Retour de matériel' }}
-                </h3>
-                <p class="mb-5 text-sm text-[var(--gris)]">
-                    {{ $reservationCourante->materiel->designation }}
-                    @if ($reservationCourante->materiel->marque)
-                        — {{ $reservationCourante->materiel->marque }} {{ $reservationCourante->materiel->modele }}
-                    @endif
-                </p>
+        <x-ui.modale :titre="$typeMouvement === 'sortie' ? 'Sortie de matériel' : 'Retour de matériel'"
+                     :sous-titre="$reservationCourante->materiel->designation . ($reservationCourante->materiel->marque ? ' — ' . $reservationCourante->materiel->marque . ' ' . $reservationCourante->materiel->modele : '')"
+                     fermer="$set('modaleOuverte', false)">
 
-                <div class="space-y-4">
-                    <div class="grid grid-cols-2 gap-4">
-                        <div>
-                            <label class="libelle">Quantité</label>
-                            <input type="number" min="1" wire:model="quantite" class="champ mt-1">
-                            @error('quantite') <span class="erreur">{{ $message }}</span> @enderror
-                        </div>
+            <div class="grille-2">
+                <x-ui.champ libelle="Quantité" type="number" min="1" wire:model="quantite" :erreur="$errors->first('quantite')" required />
 
-                        <div>
-                            <label class="libelle">
-                                {{ $typeMouvement === 'sortie' ? 'Retiré par' : 'Rendu par' }}
-                            </label>
-                            <select wire:model="agent_id" class="champ mt-1">
-                                <option value="">&mdash; Choisir &mdash;</option>
-                                @foreach ($agents as $a)
-                                    <option value="{{ $a->id }}">{{ $a->nom }} {{ $a->prenom }}</option>
-                                @endforeach
-                            </select>
-                            @error('agent_id') <span class="erreur">{{ $message }}</span> @enderror
-                        </div>
-                    </div>
-
-                    @if ($typeMouvement === 'retour')
-                        <div>
-                            <label class="libelle">État constaté</label>
-                            <select wire:model="etat_constate" class="champ mt-1">
-                                @foreach ($etats as $e)
-                                    <option value="{{ $e->value }}">{{ $e->libelle() }}</option>
-                                @endforeach
-                            </select>
-                            <p class="mt-1 text-xs text-[var(--gris)]">
-                                Un matériel rendu hors service sortira du stock disponible.
-                            </p>
-                        </div>
-                    @endif
-
-                    {{-- Checklist des accessoires : le coeur de l'ecran de retour --}}
-                    @if ($reservationCourante->materiel->accessoires->isNotEmpty())
-                        <div class="rounded-md border border-[var(--trait)] p-3">
-                            <div class="eyebrow mb-2">
-                                Accessoires
-                                @if ($typeMouvement === 'retour')
-                                    — cocher ce qui est revenu
-                                @endif
-                            </div>
-
-                            <div class="space-y-2">
-                                @foreach ($reservationCourante->materiel->accessoires as $accessoire)
-                                    <div wire:key="acc-{{ $accessoire->id }}"
-                                         class="flex flex-col gap-1 border-b border-[var(--trait)] pb-2 last:border-0 last:pb-0">
-                                        <label class="flex items-center gap-2">
-                                            <input type="checkbox"
-                                                   wire:model.live="constats.{{ $accessoire->id }}.present"
-                                                   class="rounded border-[var(--trait)] text-[var(--vert)] focus:ring-[var(--vert)]">
-                                            <span class="text-sm">{{ $accessoire->libelle }}</span>
-                                        </label>
-
-                                        @if (! ($constats[$accessoire->id]['present'] ?? false))
-                                            <input type="text"
-                                                   wire:model="constats.{{ $accessoire->id }}.observation"
-                                                   placeholder="Manquant — préciser si besoin"
-                                                   class="champ text-sm">
-                                        @endif
-                                    </div>
-                                @endforeach
-                            </div>
-                        </div>
-                    @endif
-
-                    <div>
-                        <label class="libelle">Observation</label>
-                        <textarea wire:model="observation" rows="2" class="champ mt-1"></textarea>
-                    </div>
-                </div>
-
-                <div class="mt-6 flex justify-end gap-3">
-                    <button wire:click="$set('modaleOuverte', false)" class="btn btn-secondaire">
-                        Annuler
-                    </button>
-                    <button wire:click="enregistrer" class="btn btn-principal">
-                        {{ $typeMouvement === 'sortie' ? 'Enregistrer la sortie' : 'Enregistrer le retour' }}
-                    </button>
+                <div class="champ-bloc">
+                    <label for="mouvement-agent" class="libelle">
+                        {{ $typeMouvement === 'sortie' ? 'Retiré par' : 'Rendu par' }} <span aria-hidden="true">*</span>
+                    </label>
+                    <x-ui.selection id="mouvement-agent" wire:model="agent_id" :class="$errors->has('agent_id') ? 'champ-erreur' : ''">
+                        <option value="">— Choisir —</option>
+                        @foreach ($agents as $a)
+                            <option value="{{ $a->id }}">{{ $a->nom }} {{ $a->prenom }}</option>
+                        @endforeach
+                    </x-ui.selection>
+                    @error('agent_id') <p class="champ-message">{{ $message }}</p> @enderror
                 </div>
             </div>
-        </div>
+
+            @if ($typeMouvement === 'retour')
+                <div class="champ-bloc mt-4">
+                    <label for="mouvement-etat" class="libelle">État constaté</label>
+                    <x-ui.selection id="mouvement-etat" wire:model="etat_constate">
+                        @foreach ($etats as $e)
+                            <option value="{{ $e->value }}">{{ $e->libelle() }}</option>
+                        @endforeach
+                    </x-ui.selection>
+                    <p class="champ-aide">Un matériel rendu hors service sortira du stock disponible.</p>
+                </div>
+            @endif
+
+            {{-- Accessoires --}}
+            @if ($reservationCourante->materiel->accessoires->isNotEmpty())
+                <div class="encadre mt-4">
+                    <p class="eyebrow mb-1">
+                        Accessoires
+                        @if ($typeMouvement === 'retour')
+                            — cocher ce qui est revenu
+                        @endif
+                    </p>
+
+                    <div class="divide-y divide-[var(--midsp-gris-filet)]">
+                        @foreach ($reservationCourante->materiel->accessoires as $accessoire)
+                            <div wire:key="acc-{{ $accessoire->id }}" class="py-1">
+                                <x-ui.case wire:model.live="constats.{{ $accessoire->id }}.present">
+                                    {{ $accessoire->libelle }}
+                                </x-ui.case>
+
+                                @if (! ($constats[$accessoire->id]['present'] ?? false))
+                                    <input type="text"
+                                           wire:model="constats.{{ $accessoire->id }}.observation"
+                                           placeholder="Manquant — préciser si besoin"
+                                           aria-label="Observation sur {{ $accessoire->libelle }}"
+                                           class="champ mb-2 text-sm">
+                                @endif
+                            </div>
+                        @endforeach
+                    </div>
+                </div>
+            @endif
+
+            <div class="mt-4">
+                <x-ui.champ libelle="Observation" type="textarea" rows="2" wire:model="observation" />
+            </div>
+
+            <x-slot:pied>
+                <x-ui.bouton variante="secondaire" wire:click="$set('modaleOuverte', false)">Annuler</x-ui.bouton>
+                <x-ui.bouton variante="primaire" wire:click="enregistrer" wire:loading.attr="disabled">
+                    {{ $typeMouvement === 'sortie' ? 'Enregistrer la sortie' : 'Enregistrer le retour' }}
+                </x-ui.bouton>
+            </x-slot:pied>
+        </x-ui.modale>
     @endif
 </div>

@@ -1,172 +1,130 @@
 <div class="space-y-4">
 
     @if (session('message'))
-        <div class="message">
-            {{ session('message') }}
-        </div>
+        <div class="message">{{ session('message') }}</div>
     @endif
 
     @if (session('erreur'))
-        <div class="message-erreur">
-            {{ session('erreur') }}
-        </div>
+        <div class="message-erreur">{{ session('erreur') }}</div>
     @endif
 
-    <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div class="flex flex-1 gap-2">
-            <input type="search" wire:model.live.debounce.300ms="recherche"
-                   placeholder="Nom, prenom ou IM..."
-                   class="champ sm:max-w-xs">
+    <div class="barre-outils">
+        <div class="barre-outils-filtres">
+            <x-ui.recherche wire:model.live.debounce.300ms="recherche"
+                            placeholder="Nom, prénom ou IM…"
+                            libelle="Rechercher un agent" />
 
-            <select wire:model.live="filtreFonction"
-                    class="champ sm:w-auto">
+            <x-ui.selection wire:model.live="filtreFonction" libelle="Filtrer par fonction">
                 <option value="">Toutes les fonctions</option>
                 @foreach ($fonctions as $f)
                     <option value="{{ $f->id }}">{{ $f->libelle }}</option>
                 @endforeach
-            </select>
+            </x-ui.selection>
+
+            @if (method_exists($agents, 'total'))
+                <span class="barre-outils-compte">
+                    {{ $agents->total() }} {{ $agents->total() > 1 ? 'agents' : 'agent' }}
+                </span>
+            @endif
         </div>
 
-        <button wire:click="ouvrirCreation"
-                class="btn btn-principal">
-            + Nouvel agent
-        </button>
+        <div class="barre-outils-actions">
+            <x-ui.bouton variante="primaire" icone="plus" wire:click="ouvrirCreation">
+                Nouvel agent
+            </x-ui.bouton>
+        </div>
     </div>
 
-    <div class="carte overflow-x-auto">
-        <table class="tableau min-w-full">
-            <thead>
-                <tr>
-                    <th >IM</th>
-                    <th >Agent</th>
-                    <th >Fonction</th>
-                    <th >Service</th>
-                    <th >Statut</th>
-                    <th class="text-right">Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                @forelse ($agents as $agent)
-                    <tr wire:key="agent-{{ $agent->id }}">
-                        <td class="text-[var(--gris)]">
-                            {{ $agent->im ?? '—' }}
-                        </td>
-                        <td >
-                            <div class="font-medium">{{ $agent->nom }}</div>
-                            <div class="text-sm text-[var(--gris)]">{{ $agent->prenom }}</div>
-                        </td>
-                        <td class="text-[var(--gris)]">{{ $agent->fonction->libelle }}</td>
-                        <td class="text-[var(--gris)]">{{ $agent->service->code }}</td>
-                        <td >{{ $agent->actif ? 'Actif' : 'Inactif' }}</td>
-                        <td class="text-right whitespace-nowrap">
-                            <button wire:click="ouvrirEdition({{ $agent->id }})"
-                                    class="lien-action">Modifier</button>
-                            <button wire:click="confirmerSuppression({{ $agent->id }})"
-                                    class="lien-alerte ms-4">Supprimer</button>
-                        </td>
-                    </tr>
-                @empty
-                    <tr>
-                        <td colspan="6" class="py-10 text-center text-[var(--gris)]">
-                            Aucun agent trouve.
-                        </td>
-                    </tr>
-                @endforelse
-            </tbody>
-        </table>
-    </div>
+    <x-ui.tableau :colonnes="['IM', 'Agent', 'Fonction', 'Service', 'Statut', 'Actions' => 'tableau-actions']">
+        @forelse ($agents as $agent)
+            <tr wire:key="agent-{{ $agent->id }}">
+                <td class="tableau-periode text-[var(--midsp-gris)]">{{ $agent->im ?? '—' }}</td>
 
-    <div>{{ $agents->links() }}</div>
+                <td>
+                    <span class="tableau-titre">{{ $agent->nom }}</span>
+                    <span class="tableau-secondaire">{{ $agent->prenom }}</span>
+                </td>
 
+                <td>{{ $agent->fonction->libelle }}</td>
+                <td>{{ $agent->service->code }}</td>
+
+                <td>
+                    <x-ui.badge :etat="$agent->actif ? 'ok' : 'neutre'">
+                        {{ $agent->actif ? 'Actif' : 'Inactif' }}
+                    </x-ui.badge>
+                </td>
+
+                <td class="tableau-actions">
+                    <x-ui.action icone="crayon" libelle="Modifier" wire:click="ouvrirEdition({{ $agent->id }})" texte />
+                    <x-ui.action icone="corbeille" libelle="Supprimer" wire:click="confirmerSuppression({{ $agent->id }})" danger />
+                </td>
+            </tr>
+        @empty
+            <x-ui.vide colspan="6">
+                @if ($recherche || $filtreFonction)
+                    <p>Aucun agent ne correspond à votre recherche.</p>
+                @else
+                    <p>Aucun agent enregistré pour le moment.</p>
+                    <x-ui.bouton variante="secondaire" icone="plus" wire:click="ouvrirCreation">
+                        Ajouter le premier agent
+                    </x-ui.bouton>
+                @endif
+            </x-ui.vide>
+        @endforelse
+    </x-ui.tableau>
+
+    {{ $agents->links('pagination.midsp') }}
+
+    {{-- Création / modification --}}
     @if ($modaleOuverte)
-        <div class="voile">
-            <div class="modale max-w-lg">
-                <h3 class="titre mb-5 text-lg">
-                    {{ $agentId ? 'Modifier l\'agent' : 'Nouvel agent' }}
-                </h3>
+        <x-ui.modale :titre="$agentId ? 'Modifier l\'agent' : 'Nouvel agent'"
+                     fermer="$set('modaleOuverte', false)">
 
-                <div class="space-y-4">
-                    <div class="grid grid-cols-2 gap-4">
-                        <div>
-                            <label class="libelle">Nom</label>
-                            <input type="text" wire:model="nom"
-                                   class="champ mt-1">
-                            @error('nom') <span class="erreur">{{ $message }}</span> @enderror
-                        </div>
-                        <div>
-                            <label class="libelle">Prenom</label>
-                            <input type="text" wire:model="prenom"
-                                   class="champ mt-1">
-                            @error('prenom') <span class="erreur">{{ $message }}</span> @enderror
-                        </div>
-                    </div>
+            <div class="grille-2">
+                <x-ui.champ libelle="Nom" wire:model="nom" :erreur="$errors->first('nom')" required />
+                <x-ui.champ libelle="Prénom" wire:model="prenom" :erreur="$errors->first('prenom')" required />
+            </div>
 
-                    <div class="grid grid-cols-2 gap-4">
-                        <div>
-                            <label class="libelle">IM</label>
-                            <input type="text" wire:model="im"
-                                   class="champ mt-1">
-                            @error('im') <span class="erreur">{{ $message }}</span> @enderror
-                        </div>
-                        <div>
-                            <label class="libelle">Telephone</label>
-                            <input type="text" wire:model="telephone"
-                                   class="champ mt-1">
-                        </div>
-                    </div>
+            <div class="grille-2 mt-4">
+                <x-ui.champ libelle="IM" wire:model="im" :erreur="$errors->first('im')" aide="Immatriculation, si l'agent en a une" />
+                <x-ui.champ libelle="Téléphone" type="tel" wire:model="telephone" />
+            </div>
 
-                    <div class="grid grid-cols-2 gap-4">
-                        <div>
-                            <label class="libelle">Fonction</label>
-                            <select wire:model="fonction_id"
-                                    class="champ mt-1">
-                                <option value="">— Choisir —</option>
-                                @foreach ($fonctions as $f)
-                                    <option value="{{ $f->id }}">{{ $f->libelle }}</option>
-                                @endforeach
-                            </select>
-                            @error('fonction_id') <span class="erreur">{{ $message }}</span> @enderror
-                        </div>
-                        </div>
-
-                    <label class="flex items-center gap-2">
-                        <input type="checkbox" wire:model="actif" class="rounded border-[var(--trait)] text-[var(--vert)] focus:ring-[var(--vert)]">
-                        <span class="text-sm text-[var(--gris)]">Agent actif</span>
-                    </label>
-                </div>
-
-                <div class="mt-6 flex justify-end gap-3">
-                    <button wire:click="$set('modaleOuverte', false)"
-                            class="btn btn-secondaire">
-                        Annuler
-                    </button>
-                    <button wire:click="enregistrer"
-                            class="btn btn-principal">
-                        Enregistrer
-                    </button>
+            <div class="grille-2 mt-4">
+                <div class="champ-bloc">
+                    <label for="agent-fonction" class="libelle">Fonction <span aria-hidden="true">*</span></label>
+                    <x-ui.selection id="agent-fonction" wire:model="fonction_id" :class="$errors->has('fonction_id') ? 'champ-erreur' : ''">
+                        <option value="">— Choisir —</option>
+                        @foreach ($fonctions as $f)
+                            <option value="{{ $f->id }}">{{ $f->libelle }}</option>
+                        @endforeach
+                    </x-ui.selection>
+                    @error('fonction_id') <p class="champ-message">{{ $message }}</p> @enderror
                 </div>
             </div>
-        </div>
+
+            <div class="mt-2">
+                <x-ui.case wire:model="actif">Agent actif</x-ui.case>
+            </div>
+
+            <x-slot:pied>
+                <x-ui.bouton variante="secondaire" wire:click="$set('modaleOuverte', false)">Annuler</x-ui.bouton>
+                <x-ui.bouton variante="primaire" wire:click="enregistrer" wire:loading.attr="disabled">Enregistrer</x-ui.bouton>
+            </x-slot:pied>
+        </x-ui.modale>
     @endif
 
+    {{-- Confirmation de suppression --}}
     @if ($suppressionId)
-        <div class="voile">
-            <div class="modale max-w-md">
-                <h3 class="titre text-lg">Confirmer la suppression</h3>
-                <p class="mt-2 text-sm text-[var(--gris)]">
-                    L'agent disparaitra des listes. Cette suppression est logique et reversible.
-                </p>
-                <div class="mt-6 flex justify-end gap-3">
-                    <button wire:click="$set('suppressionId', null)"
-                            class="btn btn-secondaire">
-                        Annuler
-                    </button>
-                    <button wire:click="supprimer"
-                            class="btn btn-alerte">
-                        Supprimer
-                    </button>
-                </div>
-            </div>
-        </div>
+        <x-ui.modale titre="Supprimer cet agent ?" largeur="md" fermer="$set('suppressionId', null)">
+            <p class="text-sm text-[var(--midsp-gris)]">
+                Il disparaîtra des listes. La suppression est logique et réversible.
+            </p>
+
+            <x-slot:pied>
+                <x-ui.bouton variante="secondaire" wire:click="$set('suppressionId', null)">Annuler</x-ui.bouton>
+                <x-ui.bouton variante="danger" icone="corbeille" wire:click="supprimer">Supprimer</x-ui.bouton>
+            </x-slot:pied>
+        </x-ui.modale>
     @endif
 </div>

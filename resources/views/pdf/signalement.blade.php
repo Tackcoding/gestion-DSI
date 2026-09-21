@@ -4,11 +4,7 @@
     <meta charset="utf-8">
     <title>{{ $signalement->reference }}</title>
     <style>
-        /*
-        | Charte MIDSP appliquee au document imprimable.
-        | Or Sable en aplat, jamais de texte blanc dessus.
-        | Texte courant en Noir Encre, titres en Vert Profond.
-        */
+        
         @page { margin: 18mm 20mm 22mm; }
 
         body {
@@ -18,8 +14,7 @@
             color: #1D1D1B;
         }
 
-        /* Co-branding : sceau a gauche, logo MIDSP a droite,
-           hauteurs egales, espacement superieur a 2x (charte p.9). */
+        
         .entete { width: 100%; margin-bottom: 4mm; }
         .entete td { vertical-align: middle; }
         .entete .sceau  { width: 32%; text-align: left; }
