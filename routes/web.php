@@ -2,14 +2,22 @@
 
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Gate;
 
-Route::get('/', fn () => redirect()->route(
-    auth()->check() ? 'tableau-de-bord' : 'login'
-));
+Route::get('/', function () {
+    if (! Auth::check()) {
+        return redirect()->route('login');
+    }
+
+    return redirect()->route(
+        Gate::allows('voir-tableau-de-bord') ? 'tableau-de-bord' : 'accueil'
+    );
+});
 
 Route::get('/tableau-de-bord', function () {
     return view('tableau-de-bord');
-})->middleware(['auth', 'verified'])->name('tableau-de-bord');
+})->middleware(['auth', 'verified', 'can:voir-tableau-de-bord'])->name('tableau-de-bord');
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
@@ -18,6 +26,7 @@ Route::middleware('auth')->group(function () {
       Route::view('/registre', 'mouvements.index')
         ->middleware('can:gerer-materiel')
         ->name('registre.index');
+        Route::view('/accueil', 'accueil')->name('accueil');
 
     Route::view('/materiels', 'materiels.index')
         ->middleware('can:gerer-materiel')
@@ -28,6 +37,7 @@ Route::middleware('auth')->group(function () {
         ->name('agents.index');
 
     Route::view('/evenements', 'evenements.index')->name('evenements.index');
+    Route::view('/demo-ui', 'demo-ui')->middleware('auth');
 
     Route::get('/evenements/{evenement}', function (App\Models\Evenement $evenement) {
         return view('evenements.show', compact('evenement'));

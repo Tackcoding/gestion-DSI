@@ -16,14 +16,14 @@
     <body class="antialiased">
         <div class="flex min-h-screen flex-col items-center justify-center px-4 py-10">
 
-            
+
             <div class="mb-8 text-center">
                 <a href="/" class="inline-block">
                     <img src="{{ asset('img/midsp-logo-600.png') }}"
                          alt="MIDSP — Ministère de l'Industrialisation et du Développement du Secteur Privé"
                          class="mx-auto h-auto" style="width: 220px;">
                 </a>
-                <p class="legende mt-4">Direction de la Veille et de la Communication</p>
+                <p class="legende mt-4">Direction de la Veille Économique et de la Communication</p>
             </div>
 
             <div class="carte w-full max-w-md px-7 py-8">

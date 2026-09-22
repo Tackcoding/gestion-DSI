@@ -1,6 +1,6 @@
 # Installation — Application de gestion des événements, du matériel et des absences
 
-MIDSP — Direction de la Veille et de la Communication
+MIDSP — Direction de la Veille Économique et de la Communication
 
 ---
 

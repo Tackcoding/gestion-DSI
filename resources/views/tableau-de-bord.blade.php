@@ -2,7 +2,7 @@
     <x-slot name="titre">Tableau de bord</x-slot>
 
     <x-slot name="header">
-        <p class="bandeau-surtitre">Direction de la Veille et de la Communication</p>
+        <p class="bandeau-surtitre">Direction de la Veille Économique et de la Communication</p>
         <h1 class="bandeau-titre">Tableau de bord</h1>
     </x-slot>
 

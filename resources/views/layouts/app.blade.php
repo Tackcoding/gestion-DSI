@@ -42,7 +42,7 @@
 
             <footer class="border-t border-[var(--midsp-gris-bord)] bg-white">
                 <div class="mx-auto flex max-w-7xl flex-col gap-1 px-4 py-5 sm:flex-row sm:items-center sm:justify-between sm:px-6 lg:px-8">
-                    <span class="legende">MIDSP · Direction de la Veille et de la Communication</span>
+                    <span class="legende">MIDSP · Direction de la Veille Économique et de la Communication</span>
                     <span class="legende">Gestion des événements, du matériel et des absences</span>
                 </div>
             </footer>

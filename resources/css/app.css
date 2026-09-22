@@ -952,6 +952,77 @@ a.tableau-titre:hover {
 }
 
 /* ------------------------------------------------------------------
+   Page d'accueil (agents, chefs de service, depositaire)
+   ------------------------------------------------------------------
+   Photo en fond, voile Vert Profond pour garantir le contraste du texte
+   blanc (WCAG AA), filet Or Prosperite en marge du titre comme sur le
+   bandeau des autres pages. L'image est passee par la vue dans la
+   variable --accueil-fond ; sans image, le fond reste Vert Profond. */
+.accueil {
+    display: flex;
+    align-items: center;
+    min-height: calc(100vh - 4rem - 5.5rem);
+    background-color: var(--midsp-vert-profond);
+    background-image:
+        linear-gradient(rgba(20, 58, 19, 0.86), rgba(20, 58, 19, 0.86)),
+        var(--accueil-fond, none);
+    background-size: cover;
+    background-position: center;
+    color: var(--midsp-blanc);
+}
+
+/* Ecrans larges : le voile s'eclaircit vers la droite, le texte reste a gauche sur la partie sombre */
+@media (min-width: 768px) {
+    .accueil {
+        min-height: calc(100vh - 5rem - 4.5rem);
+        background-image:
+            linear-gradient(100deg, rgba(20, 58, 19, 0.94) 0%, rgba(29, 86, 27, 0.82) 50%, rgba(29, 86, 27, 0.30) 100%),
+            var(--accueil-fond, none);
+    }
+}
+
+.accueil-interieur {
+    width: 100%;
+    max-width: 80rem;
+    margin: 0 auto;
+    padding: 4rem 1rem;
+}
+@media (min-width: 640px)  { .accueil-interieur { padding: 5rem 1.5rem; } }
+@media (min-width: 1024px) { .accueil-interieur { padding: 6rem 2rem; } }
+
+.accueil-bloc {
+    max-width: 46rem;
+    padding-left: 1.5rem;
+    border-left: 4px solid var(--midsp-or);
+}
+
+.accueil-sigle {
+    margin: 0 0 1.25rem;
+    font-family: 'Metropolis', Arial, sans-serif;
+    font-weight: 700;
+    font-size: 1.125rem;
+    letter-spacing: 0.24em;
+    color: var(--midsp-or-sable);
+}
+
+.accueil-titre {
+    margin: 0;
+    font-family: 'Metropolis', Arial, sans-serif;
+    font-weight: 700;
+    font-size: clamp(2rem, 1.25rem + 3.5vw, 3.75rem);
+    line-height: 1.08;
+    color: var(--midsp-blanc);
+}
+.accueil-titre span { display: block; }
+
+.accueil-direction {
+    margin: 1.75rem 0 0;
+    font-size: 1.125rem;
+    line-height: 1.5;
+    color: rgba(255, 255, 255, 0.85);
+}
+
+/* ------------------------------------------------------------------
    6. Animations, mobile, mouvement reduit
    ------------------------------------------------------------------ */
 @keyframes pulsation {

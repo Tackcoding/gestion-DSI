@@ -1,17 +1,23 @@
+{{-- L'accueil dépend du rôle : tableau de bord pour le directeur et l'administrateur,
+     page d'accueil institutionnelle pour les autres. --}}
+@php
+    $routeAccueil = auth()->user()->can('voir-tableau-de-bord') ? 'tableau-de-bord' : 'accueil';
+@endphp
+
 <nav x-data="{ ouvert: false }" class="border-b border-[var(--midsp-gris-bord)] bg-white">
     <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div class="flex h-16 justify-between">
+        <div class="flex h-16 justify-between sm:h-20">
 
             <div class="flex">
                 <div class="flex shrink-0 items-center">
-                    <a href="{{ route('tableau-de-bord') }}" class="inline-flex items-center">
-                        <x-application-logo />
+                    <a href="{{ route($routeAccueil) }}" class="inline-flex items-center">
+                        <x-application-logo class="h-12 w-auto sm:h-16" />
                     </a>
                 </div>
 
                 {{-- Menu principal (écrans larges) --}}
                 <div class="hidden sm:ms-10 sm:flex sm:space-x-6">
-                    <x-nav-link :href="route('tableau-de-bord')" :active="request()->routeIs('tableau-de-bord')">
+                    <x-nav-link :href="route($routeAccueil)" :active="request()->routeIs('tableau-de-bord', 'accueil')">
                         Accueil
                     </x-nav-link>
 
@@ -45,12 +51,12 @@
                 </div>
             </div>
 
-            {{-- Menu utilisateur (écrans larges) : même hauteur que les liens, pour rester sur la même ligne --}}
+            {{-- Menu utilisateur (écrans larges) : même hauteur que les liens (80 px), pour rester sur la même ligne --}}
             <div class="hidden sm:ms-6 sm:flex sm:items-stretch">
                 <x-dropdown align="right" width="56">
                     <x-slot name="trigger">
                         <button type="button"
-                                class="inline-flex h-16 items-center gap-2 border-b-4 border-transparent px-2 text-base text-[var(--midsp-gris)] transition hover:text-[var(--midsp-noir)]">
+                                class="inline-flex h-20 items-center gap-2 border-b-4 border-transparent px-2 text-base text-[var(--midsp-gris)] transition hover:text-[var(--midsp-noir)]">
                             {{ Auth::user()->name }}
                             <x-ui.icone nom="chevron" class="h-4 w-4" />
                         </button>
@@ -99,7 +105,7 @@
     {{-- Menu mobile : mêmes entrées que le menu principal --}}
     <div id="menu-mobile" :class="{'block': ouvert, 'hidden': ! ouvert}" class="hidden sm:hidden">
         <div class="space-y-1 pb-3 pt-2">
-            <x-responsive-nav-link :href="route('tableau-de-bord')" :active="request()->routeIs('tableau-de-bord')">
+            <x-responsive-nav-link :href="route($routeAccueil)" :active="request()->routeIs('tableau-de-bord', 'accueil')">
                 Accueil
             </x-responsive-nav-link>
 
