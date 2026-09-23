@@ -8,6 +8,9 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
+/**
+ * @method static \Database\Factories\UserFactory factory($count = null, $state = [])
+ */
 class User extends Authenticatable
 {
     use HasFactory, Notifiable;

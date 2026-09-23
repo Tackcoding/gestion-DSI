@@ -17,7 +17,7 @@
                 </p>
                 @if ($evenement->demandeur)
                     <p class="mt-1 text-sm text-[var(--midsp-gris)]">
-                        Demandé par {{ $evenement->demandeur->nom }}
+                        Demandé par {{ $evenement->demandeur }}
                     </p>
                 @endif
                 @if ($evenement->description)

@@ -18,11 +18,16 @@ class Agent extends Model
     protected $fillable = [
         'im', 'nom', 'prenom', 'fonction_id', 'service_id',
         'user_id', 'telephone', 'actif',
+        // Carriere, reprise sur le formulaire officiel de conge / permission
+        'grade', 'classe', 'echelon', 'indice', 'chapitre', 'date_entree_administration',
     ];
 
     protected function casts(): array
     {
-        return ['actif' => 'boolean'];
+        return [
+            'actif'                      => 'boolean',
+            'date_entree_administration' => 'date',
+        ];
     }
 
     // --- Relations ---
@@ -57,6 +62,12 @@ class Agent extends Model
     public function droitsConges(): HasMany
     {
         return $this->hasMany(DroitConge::class);
+    }
+
+    /** Codes d'acces generes pour cet agent (voir CompteService). */
+    public function codesActivation(): HasMany
+    {
+        return $this->hasMany(CodeActivation::class);
     }
 
     // --- Accesseurs ---

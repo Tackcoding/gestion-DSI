@@ -15,7 +15,7 @@
                     <span>du Secteur Privé</span>
                 </h1>
 
-                <p class="accueil-direction">Direction de la Veille et de la Communication</p>
+                <p class="accueil-direction">Direction de la Veille Économique et de la Communication</p>
             </div>
         </div>
     </section>

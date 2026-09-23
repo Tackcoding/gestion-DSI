@@ -19,10 +19,7 @@
             </div>
         </div>
 
-        <div class="carte p-5 sm:p-8">
-            <div class="max-w-xl">
-                @include('profile.partials.delete-user-form')
-            </div>
-        </div>
+        {{-- Pas de suppression de compte par l'agent : les comptes sont gérés
+             par le directeur et l'administrateur (page Agents), qui les désactivent. --}}
     </div>
 </x-app-layout>

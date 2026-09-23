@@ -14,12 +14,12 @@ class MaterielSeeder extends Seeder
     {
         $cat = CategorieMateriel::pluck('id', 'code');
 
-        // Supports de communication : geres en quantite, pas d'identification
+        // Categorie Visuel (supports de communication) : geres en quantite, pas d'identification
         // individuelle (aucun numero de serie, aucun accessoire).
         $supports = [
             ['designation' => 'Roll up MIDSP',   'quantite_totale' => 2],
             ['designation' => 'Light box',       'quantite_totale' => 1],
-            ['designation' => 'Oriflamme MIDSP', 'quantite_totale' => 2, 'description' => 'Support beton'],
+            ['designation' => 'Oriflamme MIDSP', 'quantite_totale' => 2, 'description' => 'Support béton'],
             ['designation' => 'Lettrine MIDSP',  'quantite_totale' => 1],
             ['designation' => 'Cubes MIDSP',     'quantite_totale' => 3],
         ];
@@ -35,28 +35,28 @@ class MaterielSeeder extends Seeder
             );
         }
 
-        // Materiel audiovisuel et informatique : unitaire, avec accessoires
+        // Categorie Informatique et audiovisuel : unitaire, avec accessoires
         // constates a chaque sortie et retour.
         $equipements = [
             [
-                'designation'     => 'Appareil photo numerique',
+                'designation'     => 'Appareil photo numérique',
                 'marque'          => 'CANON',
                 'modele'          => '90D',
-                'categorie'       => 'AUDIO',
+                'categorie'       => 'INFO',
                 'accessoires'     => ['Batterie', 'Chargeur'],
             ],
             [
                 'designation'     => 'Objectif',
                 'marque'          => 'CANON',
                 'modele'          => '18-55mm F4',
-                'categorie'       => 'AUDIO',
+                'categorie'       => 'INFO',
                 'accessoires'     => [],
             ],
             [
                 'designation'     => 'Ordinateur portable',
                 'marque'          => 'Asus',
                 'modele'          => 'ExpertBook',
-                'description'     => 'Intel Core i5 13e generation, SSD 1 To, RAM 16 Go, carte graphique 4 Go',
+                'description'     => 'Intel Core i5 13e génération, SSD 1 To, RAM 16 Go, carte graphique 4 Go',
                 'categorie'       => 'INFO',
                 'accessoires'     => ['Souris sans fil', 'Chargeur'],
             ],

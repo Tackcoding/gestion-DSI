@@ -19,6 +19,8 @@
         <div class="flex min-h-screen flex-col">
             @include('layouts.navigation')
 
+            @livewireStyles
+
             {{-- Bandeau de page : $header (sur-titre + titre) et, en option, $actions (bouton principal) --}}
             @isset($header)
                 <header class="bandeau">
@@ -47,5 +49,6 @@
                 </div>
             </footer>
         </div>
+        @livewireScripts
     </body>
 </html>

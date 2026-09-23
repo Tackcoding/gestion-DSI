@@ -1,7 +1,7 @@
 {{-- Icônes tracées à la main, un seul trait, sans bibliothèque externe.
      Usage : <x-ui.icone nom="recherche" />
      Noms : recherche, plus, crayon, corbeille, oeil, chevron, fermer, coche, alerte,
-            calendrier, personnes, sortie, retour, document, trombone, boite, tampon, fleche-gauche --}}
+            calendrier, personnes, sortie, retour, document, trombone, boite, tampon, fleche-gauche, cle --}}
 @props(['nom'])
 @php
 $traces = [
@@ -23,6 +23,7 @@ $traces = [
     'boite'         => '<path d="M3 8h18v12H3z"/><path d="M2 4h20v4H2zM10 12h4"/>',
     'tampon'        => '<path d="M5 20h14M8 20v-3a4 4 0 0 1 8 0v3M12 4a3 3 0 0 0-3 3c0 2 3 4 3 4s3-2 3-4a3 3 0 0 0-3-3Z"/>',
     'fleche-gauche' => '<path d="M19 12H5M11 18l-6-6 6-6"/>',
+    'cle'           => '<circle cx="8" cy="15" r="4"/><path d="m10.8 12.2 9.2-9.2M17 6l3 3M14 9l2 2"/>',
 ];
 @endphp
 <svg {{ $attributes->merge(['class' => 'icone']) }} viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">{!! $traces[$nom] ?? '' !!}</svg>

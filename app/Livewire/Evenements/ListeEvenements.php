@@ -3,7 +3,6 @@
 namespace App\Livewire\Evenements;
 
 use App\Enums\StatutEvenement;
-use App\Models\Agent;
 use App\Models\Evenement;
 use Livewire\Attributes\Url;
 use Livewire\Component;
@@ -27,29 +26,32 @@ class ListeEvenements extends Component
     public string $lieu = '';
     public string $date_debut = '';
     public string $date_fin = '';
-    public ?int $demandeur_id = null;
+
+    /** Texte libre : le demandeur n'est pas forcement un agent de la direction. */
+    public string $demandeur = '';
 
     public ?int $suppressionId = null;
 
     protected function rules(): array
     {
         return [
-            'intitule'     => 'required|string|max:255',
-            'description'  => 'nullable|string',
-            'lieu'         => 'nullable|string|max:255',
-            'date_debut'   => 'required|date',
+            'intitule'    => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'lieu'        => 'nullable|string|max:255',
+            'date_debut'  => 'required|date',
             // La date de fin ne peut pas preceder le debut : regle metier
             // verifiee ici, la base ne sait pas l'exprimer.
-            'date_fin'     => 'required|date|after_or_equal:date_debut',
-            'demandeur_id' => 'required|exists:agents,id',
+            'date_fin'    => 'required|date|after_or_equal:date_debut',
+            'demandeur'   => 'required|string|max:255',
         ];
     }
 
     protected array $messages = [
-        'intitule.required'         => 'L\'intitule est obligatoire.',
-        'date_debut.required'       => 'La date de debut est obligatoire.',
-        'date_fin.after_or_equal'   => 'La date de fin doit suivre la date de debut.',
-        'demandeur_id.required'     => 'Le demandeur est obligatoire.',
+        'intitule.required'       => 'L\'intitulé est obligatoire.',
+        'date_debut.required'     => 'La date de début est obligatoire.',
+        'date_fin.required'       => 'La date de fin est obligatoire.',
+        'date_fin.after_or_equal' => 'La date de fin doit suivre la date de début.',
+        'demandeur.required'      => 'Le demandeur est obligatoire.',
     ];
 
     public function updatingRecherche(): void
@@ -72,13 +74,13 @@ class ListeEvenements extends Component
     {
         $evenement = Evenement::findOrFail($id);
 
-        $this->evenementId  = $evenement->id;
-        $this->intitule     = $evenement->intitule;
-        $this->description  = $evenement->description ?? '';
-        $this->lieu         = $evenement->lieu ?? '';
-        $this->date_debut   = $evenement->date_debut->format('Y-m-d');
-        $this->date_fin     = $evenement->date_fin->format('Y-m-d');
-        $this->demandeur_id = $evenement->demandeur_id;
+        $this->evenementId = $evenement->id;
+        $this->intitule    = $evenement->intitule;
+        $this->description = $evenement->description ?? '';
+        $this->lieu        = $evenement->lieu ?? '';
+        $this->date_debut  = $evenement->date_debut->format('Y-m-d');
+        $this->date_fin    = $evenement->date_fin->format('Y-m-d');
+        $this->demandeur   = $evenement->demandeur ?? '';
 
         $this->resetValidation();
         $this->modaleOuverte = true;
@@ -87,6 +89,7 @@ class ListeEvenements extends Component
     public function enregistrer(): void
     {
         $data = $this->validate();
+        $data['demandeur'] = trim($data['demandeur']);
         $modification = (bool) $this->evenementId;
 
         if (! $modification) {
@@ -98,7 +101,7 @@ class ListeEvenements extends Component
         $this->modaleOuverte = false;
         $this->reinitialiserFormulaire();
 
-        session()->flash('message', $modification ? 'Evenement modifie.' : 'Evenement cree.');
+        session()->flash('message', $modification ? 'Événement modifié.' : 'Événement créé.');
     }
 
     /** Passage de brouillon a valide : l'evenement devient operationnel. */
@@ -107,12 +110,12 @@ class ListeEvenements extends Component
         $evenement = Evenement::findOrFail($id);
 
         if ($evenement->statut !== StatutEvenement::Brouillon) {
-            session()->flash('erreur', 'Seul un brouillon peut etre valide.');
+            session()->flash('erreur', 'Seul un brouillon peut être validé.');
             return;
         }
 
         $evenement->update(['statut' => StatutEvenement::Valide]);
-        session()->flash('message', 'Evenement valide.');
+        session()->flash('message', 'Événement validé.');
     }
 
     public function annuler(int $id): void
@@ -120,7 +123,7 @@ class ListeEvenements extends Component
         $evenement = Evenement::findOrFail($id);
         $evenement->update(['statut' => StatutEvenement::Annule]);
 
-        session()->flash('message', 'Evenement annule.');
+        session()->flash('message', 'Événement annulé.');
     }
 
     public function confirmerSuppression(int $id): void
@@ -137,31 +140,31 @@ class ListeEvenements extends Component
         if ($evenement->couvertures()->exists() || $evenement->reservations()->exists()) {
             $this->suppressionId = null;
             session()->flash('erreur',
-                'Cet evenement a des couvertures ou des reservations : annulez-le plutot.');
+                'Cet événement a des couvertures ou des réservations : annulez-le plutôt.');
             return;
         }
 
         $evenement->delete();
         $this->suppressionId = null;
 
-        session()->flash('message', 'Evenement supprime.');
+        session()->flash('message', 'Événement supprimé.');
     }
 
     private function reinitialiserFormulaire(): void
     {
         $this->reset(['evenementId', 'intitule', 'description', 'lieu',
-                      'date_debut', 'date_fin', 'demandeur_id']);
+                      'date_debut', 'date_fin', 'demandeur']);
         $this->resetValidation();
     }
 
     public function render()
     {
         $evenements = Evenement::query()
-            ->with(['demandeur.fonction'])
             ->withCount(['couvertures', 'reservations'])
             ->when($this->recherche, fn ($q) => $q->where(function ($sq) {
                 $sq->where('intitule', 'like', "%{$this->recherche}%")
-                   ->orWhere('lieu', 'like', "%{$this->recherche}%");
+                   ->orWhere('lieu', 'like', "%{$this->recherche}%")
+                   ->orWhere('demandeur', 'like', "%{$this->recherche}%");
             }))
             ->when($this->filtreStatut, fn ($q) => $q->where('statut', $this->filtreStatut))
             ->orderByDesc('date_debut')
@@ -170,7 +173,6 @@ class ListeEvenements extends Component
         return view('livewire.evenements.liste-evenements', [
             'evenements' => $evenements,
             'statuts'    => StatutEvenement::cases(),
-            'agents'     => Agent::actifs()->orderBy('nom')->get(),
         ]);
     }
 }

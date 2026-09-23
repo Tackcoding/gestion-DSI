@@ -2,7 +2,6 @@
 
 namespace App\Providers;
 
-use App\Enums\RoleUtilisateur;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
 
@@ -20,10 +19,8 @@ class AppServiceProvider extends ServiceProvider
         Gate::define('valider-reservation',  fn ($u) => $u->role->peutValiderReservation());
         Gate::define('valider-absence',      fn ($u) => $u->role->peutValiderAbsence());
         Gate::define('administrer',          fn ($u) => $u->role->estResponsable());
-         Gate::define('viser-signalement', fn ($u) => $u->role->estResponsable());
-         Gate::define('voir-tableau-de-bord', fn ($u) => $u->role->peutValiderAbsence());
-
-
-
-}
+        Gate::define('viser-signalement',    fn ($u) => $u->role->estResponsable());
+        Gate::define('voir-tableau-de-bord', fn ($u) => $u->role->peutValiderAbsence());
+        Gate::define('gerer-comptes',        fn ($u) => $u->role->peutGererComptes());
+    }
 }

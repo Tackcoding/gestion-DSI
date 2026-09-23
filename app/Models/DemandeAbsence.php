@@ -17,7 +17,8 @@ class DemandeAbsence extends Model
 
     protected $fillable = [
         'agent_id', 'type_id', 'date_debut', 'date_fin', 'demi_journee',
-        'nb_jours', 'motif', 'origine', 'statut',
+        'nb_jours', 'motif', 'lieu_jouissance', 'adresse_contact', 'contact',
+        'origine', 'statut',
         'validateur_id', 'valide_le', 'motif_refus', 'justificatif_path',
     ];
 
@@ -47,6 +48,35 @@ class DemandeAbsence extends Model
     {
         return $this->belongsTo(Agent::class, 'validateur_id');
     }
+
+    // --- Formulaire officiel (export PDF) ---
+
+    /**
+     * Rubrique cochee sur le formulaire papier du Secretariat general :
+     *   conge_annuel : conge annuel pris en une fois (quota complet)
+     *   fraction     : conge annuel pris en partie
+     *   permission   : permission / autorisation d'absence
+     * Null pour les autres types (maladie, formation...) : pas de formulaire.
+     */
+    public function natureFormulaire(): ?string
+    {
+        return match ($this->type?->code) {
+            'conge_annuel' => (float) $this->nb_jours >= (float) ($this->type->quota_annuel ?? 30)
+                                ? 'conge_annuel'
+                                : 'fraction',
+            'permission'   => 'permission',
+            default        => null,
+        };
+    }
+
+    /** Une demande refusee ou annulee ne s'imprime plus. */
+    public function estImprimable(): bool
+    {
+        return $this->natureFormulaire() !== null
+            && in_array($this->statut, [StatutDemandeAbsence::Demandee, StatutDemandeAbsence::Validee], true);
+    }
+
+    // --- Scopes ---
 
     public function scopeValidees(Builder $query): Builder
     {

@@ -21,11 +21,11 @@ class AgentSeeder extends Seeder
             ['im' => '492043', 'nom' => 'RATOVELO MAHERY', 'prenom' => 'Njato Ny Aina',            'fonction' => 'Chef de service'],
             ['im' => '347933', 'nom' => 'HANTANIRINA',     'prenom' => 'Tiana Herizo',             'fonction' => 'Directeur de la Communication'],
             ['im' => '385792', 'nom' => 'RANDVSON',        'prenom' => 'Sahobiarivelo Charlane',   'fonction' => 'Directeur de la Communication'],
-            ['im' => '404602', 'nom' => 'RAZAFINDRAZAKA',  'prenom' => 'Fabrice Antonio',          'fonction' => 'Charge de Communication'],
-            ['im' => '409259', 'nom' => 'DEWA ROSSEN',     'prenom' => 'Ilonantenaina Morenot',    'fonction' => 'Secretaire qualifie'],
-            ['im' => '492034', 'nom' => 'RAKOTOARISOA',    'prenom' => 'Ando Malala',              'fonction' => 'Depositaire comptable'],
+            ['im' => '404602', 'nom' => 'RAZAFINDRAZAKA',  'prenom' => 'Fabrice Antonio',          'fonction' => 'Chargé(e) de communication'],
+            ['im' => '409259', 'nom' => 'DEWA ROSSEN',     'prenom' => 'Ilonantenaina Morenot',    'fonction' => 'Secrétaire qualifié(e)'],
+            ['im' => '492034', 'nom' => 'RAKOTOARISOA',    'prenom' => 'Ando Malala',              'fonction' => 'Dépositaire comptable'],
             ['im' => '492047', 'nom' => 'RAKOTONIAINA',    'prenom' => 'Sanitatra Tahiry',         'fonction' => 'Directeur de la Communication'],
-            ['im' => null,     'nom' => 'NAHARITRAHY',     'prenom' => 'Aurion Basilio',           'fonction' => 'Charge de Communication'],
+            ['im' => null,     'nom' => 'NAHARITRAHY',     'prenom' => 'Aurion Basilio',           'fonction' => 'Chargé(e) de communication'],
         ];
 
         foreach ($agents as $a) {

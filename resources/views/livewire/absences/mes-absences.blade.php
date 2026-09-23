@@ -93,6 +93,11 @@
                 </td>
 
                 <td class="tableau-actions">
+                    @if ($demande->estImprimable())
+                        <x-ui.action icone="document" libelle="Formulaire PDF"
+                                     href="{{ route('absences.formulaire', $demande) }}" target="_blank" rel="noopener" />
+                    @endif
+
                     @if ($demande->justificatif_path)
                         <x-ui.action icone="trombone" libelle="Justificatif"
                                      href="{{ Storage::url($demande->justificatif_path) }}" target="_blank" rel="noopener" />
@@ -157,8 +162,28 @@
             @endif
 
             <div class="mt-4">
-                <x-ui.champ libelle="Motif" type="textarea" rows="2" wire:model="motif" />
+                <x-ui.champ libelle="Motif de la demande" type="textarea" rows="2" wire:model="motif" />
             </div>
+
+            {{-- Repris sur le formulaire officiel : congé annuel et permission seulement --}}
+            @if ($this->avecFormulaire)
+                <div class="encadre mt-4">
+                    <p class="eyebrow">Pour le formulaire officiel</p>
+                    <p class="champ-aide mt-0">Ces informations figureront sur la demande imprimée.</p>
+
+                    <div class="mt-3">
+                        <x-ui.champ libelle="Lieu de jouissance" wire:model="lieu_jouissance"
+                                    :erreur="$errors->first('lieu_jouissance')"
+                                    aide="Ville ou région où le congé sera passé" />
+
+                        <x-ui.champ libelle="Adresse où l'on peut vous joindre" wire:model="adresse_contact"
+                                    :erreur="$errors->first('adresse_contact')" />
+
+                        <x-ui.champ libelle="Contact" type="tel" wire:model="contact"
+                                    :erreur="$errors->first('contact')" />
+                    </div>
+                </div>
+            @endif
 
             <div class="champ-bloc mt-4">
                 <label for="absence-justificatif" class="libelle">Justificatif (PDF ou image)</label>

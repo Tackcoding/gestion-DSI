@@ -5,7 +5,6 @@ namespace App\Models;
 use App\Enums\StatutEvenement;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
@@ -15,8 +14,11 @@ class Evenement extends Model
 
     protected $fillable = [
         'intitule', 'description', 'lieu',
-        'date_debut', 'date_fin', 'statut', 'demandeur_id',
+        'date_debut', 'date_fin', 'statut', 'demandeur',
     ];
+
+    // Le demandeur est un texte libre (cabinet, autre direction, partenaire) :
+    // ce n'est plus une relation vers la table agents.
 
     protected function casts(): array
     {
@@ -25,11 +27,6 @@ class Evenement extends Model
             'date_fin'   => 'date',
             'statut'     => StatutEvenement::class,
         ];
-    }
-
-    public function demandeur(): BelongsTo
-    {
-        return $this->belongsTo(Agent::class, 'demandeur_id');
     }
 
     public function couvertures(): HasMany

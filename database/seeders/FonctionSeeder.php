@@ -13,9 +13,9 @@ class FonctionSeeder extends Seeder
         $fonctions = [
             'Chef de service',
             'Directeur de la Communication',
-            'Charge de Communication',
-            'Secretaire qualifie',
-            'Depositaire comptable',
+            'Chargé(e) de communication',
+            'Secrétaire qualifié(e)',
+            'Dépositaire comptable',
         ];
 
         foreach ($fonctions as $libelle) {

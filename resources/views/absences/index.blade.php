@@ -8,6 +8,9 @@
 
     @can('valider-absence')
         <x-slot name="actions">
+            <x-ui.bouton variante="secondaire" icone="calendrier" href="{{ route('absences.planning') }}">
+                Planning
+            </x-ui.bouton>
             <x-ui.bouton variante="secondaire" icone="coche" href="{{ route('absences.validation') }}">
                 Demandes à valider
             </x-ui.bouton>

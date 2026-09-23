@@ -55,4 +55,32 @@ enum RoleUtilisateur: string
     {
         return $this === self::Agent;
     }
+
+    // --- Comptes de connexion ---
+
+    /** Generer des codes d'acces, changer un role, desactiver un compte. */
+    public function peutGererComptes(): bool
+    {
+        return $this->estResponsable();
+    }
+
+    /**
+     * Le directeur a les memes pouvoirs que l'administrateur, sauf un :
+     * il ne peut ni creer un administrateur, ni toucher a un compte
+     * administrateur. Personne ne peut donner plus que ce qu'il a.
+     */
+    public function peutAttribuer(self $role): bool
+    {
+        return match ($this) {
+            self::Administrateur => true,
+            self::Directeur      => $role !== self::Administrateur,
+            default              => false,
+        };
+    }
+
+    /** @return array<int, self> */
+    public function rolesAttribuables(): array
+    {
+        return array_values(array_filter(self::cases(), fn (self $role) => $this->peutAttribuer($role)));
+    }
 }

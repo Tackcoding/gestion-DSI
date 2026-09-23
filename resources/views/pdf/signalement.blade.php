@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <title>{{ $signalement->reference }}</title>
     <style>
-
+        
         @page { margin: 18mm 20mm 22mm; }
 
         body {
@@ -14,7 +14,7 @@
             color: #1D1D1B;
         }
 
-
+        
         .entete { width: 100%; margin-bottom: 4mm; }
         .entete td { vertical-align: middle; }
         .entete .sceau  { width: 32%; text-align: left; }

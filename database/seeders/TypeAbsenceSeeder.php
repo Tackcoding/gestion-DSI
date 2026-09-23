@@ -12,7 +12,7 @@ class TypeAbsenceSeeder extends Seeder
         $types = [
             [
                 'code' => 'conge_annuel',
-                'libelle' => 'Conge annuel',
+                'libelle' => 'Congé annuel',
                 'decompte_solde' => true,
                 'quota_annuel' => 30.0,
                 'duree_max_par_demande' => null,
@@ -44,7 +44,7 @@ class TypeAbsenceSeeder extends Seeder
             ],
             [
                 'code' => 'non_justifiee',
-                'libelle' => 'Absence non justifiee',
+                'libelle' => 'Absence non justifiée',
                 'decompte_solde' => false,
                 'quota_annuel' => null,
                 'duree_max_par_demande' => null,

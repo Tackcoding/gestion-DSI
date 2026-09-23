@@ -9,10 +9,11 @@ class CategorieMaterielSeeder extends Seeder
 {
     public function run(): void
     {
+        // Deux categories, a la demande du directeur. Le code COMM porte la
+        // regle du pret a une autre direction (ReservationService).
         $categories = [
-            ['code' => 'COMM',  'libelle' => 'Support de communication'],
-            ['code' => 'AUDIO', 'libelle' => 'Materiel audiovisuel'],
-            ['code' => 'INFO',  'libelle' => 'Materiel informatique'],
+            ['code' => 'COMM', 'libelle' => 'Visuel'],
+            ['code' => 'INFO', 'libelle' => 'Informatique et audiovisuel'],
         ];
 
         foreach ($categories as $c) {

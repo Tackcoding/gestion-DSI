@@ -12,7 +12,7 @@
     <div class="barre-outils">
         <div class="barre-outils-filtres">
             <x-ui.recherche wire:model.live.debounce.300ms="recherche"
-                            placeholder="Intitulé ou lieu…"
+                            placeholder="Intitulé, lieu ou demandeur…"
                             libelle="Rechercher un événement" />
 
             <x-ui.selection wire:model.live="filtreStatut" libelle="Filtrer par statut">
@@ -58,7 +58,7 @@
                     @endif
                 </td>
 
-                <td>{{ $evenement->demandeur->nom }}</td>
+                <td>{{ $evenement->demandeur ?: '—' }}</td>
 
                 {{-- Un événement validé ou en cours sans aucune couverture est une alerte, pas un zéro --}}
                 <td class="tableau-nombre">
@@ -127,29 +127,13 @@
             </div>
 
             <div class="grille-2 mt-4">
-                <div class="champ-bloc">
-                    <label for="evenement-demandeur" class="libelle">Demandeur <span aria-hidden="true">*</span></label>
-                    <x-ui.selection id="evenement-demandeur" wire:model="demandeur_id" :class="$errors->has('demandeur_id') ? 'champ-erreur' : ''">
-                        <option value="">— Choisir —</option>
-                        @foreach ($agents as $a)
-                            <option value="{{ $a->id }}">{{ $a->nom }} {{ $a->prenom }}</option>
-                        @endforeach
-                    </x-ui.selection>
-                    @error('demandeur_id') <p class="champ-message">{{ $message }}</p> @enderror
-                </div>
+                <x-ui.champ libelle="Demandeur" wire:model="demandeur" :erreur="$errors->first('demandeur')"
+                            placeholder="Cabinet du Ministre, DAAF, partenaire…" required />
 
-                @if ($evenementId)
-                    <div class="champ-bloc">
-                        <label for="evenement-statut" class="libelle">Statut</label>
-                        <x-ui.selection id="evenement-statut" wire:model="statut">
-                            @foreach ($statuts as $s)
-                                <option value="{{ $s->value }}">{{ $s->libelle() }}</option>
-                            @endforeach
-                        </x-ui.selection>
-                    </div>
-                @else
+                {{-- Le statut ne se modifie pas ici : il change par les actions Valider / Annuler. --}}
+                @unless ($evenementId)
                     <p class="champ-aide self-end pb-3">L'événement sera créé en brouillon.</p>
-                @endif
+                @endunless
             </div>
 
             <div class="mt-4">
